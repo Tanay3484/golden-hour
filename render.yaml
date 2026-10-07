@@ -1,0 +1,13 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Model-serving service is defined in specs (see specs/001-golden-hour/design.md) and added in a later task.
+services:
+  - type: web
+    name: golden-hour
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    envVars:
+      - key: GH_MODEL
+        value: gemma3:1b
+      - key: GH_OLLAMA_URL
+        sync: false

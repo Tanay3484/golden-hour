@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Golden Hour</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 32rem; margin: 2rem auto; padding: 0 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Golden Hour</h1>
+  <p>Your best 20–40 minutes outside today. Coming soon.</p>
+  <p id="status">Checking backend…</p>
+  <script>
+    fetch("/api/health").then(r => r.json())
+      .then(d => document.getElementById("status").textContent = `Backend ok · model: ${d.model}`)
+      .catch(() => document.getElementById("status").textContent = "Backend unreachable");
+  </script>
+</body>
+</html>

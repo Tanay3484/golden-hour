@@ -1,6 +1,6 @@
 # 001 — Golden Hour MVP: Tasks
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-08)
 - **Implements:** [design.md](design.md)
 - **Owners:** `@human` = Tanay writes it by hand · `@ai` = Claude · `@human+ai` = pair
 
@@ -33,7 +33,7 @@ The AI side is built around your interfaces (design §4). Until your module land
 
 ### Foundation
 
-- [ ] **T1 @ai: Domain models** (R2.1, R3.3, R4.2)
+- [x] **T1 @ai: Domain models** (R2.1, R3.3, R4.2)
   `models.py` exactly as design §4.1, including the `TimeRange` end > start validator.
   *Done when:* model tests pass. `scoring.py` exists with the five signatures from §4.2, each raising
   `NotImplementedError`.

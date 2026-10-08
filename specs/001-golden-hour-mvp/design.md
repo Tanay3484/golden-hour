@@ -1,6 +1,6 @@
 # 001 — Golden Hour MVP: Design
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-08)
 - **Implements:** [requirements.md](requirements.md)
 
 ## 1. Architecture
@@ -131,6 +131,17 @@ class Suggestion(BaseModel):
 class SuggestionContext(BaseModel):
     window: Window
     place_name: str | None
+
+class Place(BaseModel):              # /api/geocode result item
+    name: str
+    country: str | None
+    lat: float
+    lon: float
+
+class PlanRequest(BaseModel):        # /api/plan body
+    lat: float                       # -90..90
+    lon: float                       # -180..180
+    free_ranges: list[TimeRange] = []
 ```
 
 ### 4.2 Scoring (`scoring.py`): @human
@@ -247,3 +258,4 @@ downloadIcs(icsString, filename)       // Blob + temporary <a download>
 ## Changelog
 
 - 2026-10-08 — Initial draft.
+- 2026-10-08 — T1: added `Place` and `PlanRequest` to §4.1 (they were implied by §4.4).

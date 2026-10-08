@@ -1,6 +1,6 @@
 # 001 — Golden Hour MVP: Requirements
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-08)
 - **Owner:** @Tanay3484
 - **Deadline:** submission due 2026-10-11 (DEV Hacktoberfest Week 1, "Touch Grass")
 

@@ -33,4 +33,4 @@ gate** before the next phase starts. Approval is recorded by setting `Status: Ap
 
 | ID | Feature | Phase | Status |
 |----|---------|-------|--------|
-| 001 | [Golden Hour MVP](001-golden-hour-mvp/) | Requirements · Design · Tasks | All drafted — awaiting review |
+| 001 | [Golden Hour MVP](001-golden-hour-mvp/) | Implement | Approved 2026-10-08 — in progress |

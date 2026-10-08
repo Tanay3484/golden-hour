@@ -4,18 +4,93 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Golden Hour</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 32rem; margin: 2rem auto; padding: 0 1rem; }
-  </style>
+  <meta name="description" content="Your best 20–40 minutes outside today, planned by an open-weight model.">
+  <meta name="theme-color" content="#e07a1f">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌅</text></svg>">
+  <link rel="stylesheet" href="/static/style.css">
+  <script type="module" src="/static/app.js"></script>
 </head>
 <body>
-  <h1>Golden Hour</h1>
-  <p>Your best 20–40 minutes outside today. Coming soon.</p>
-  <p id="status">Checking backend…</p>
-  <script>
-    fetch("/api/health").then(r => r.json())
-      .then(d => document.getElementById("status").textContent = `Backend ok · model: ${d.model}`)
-      .catch(() => document.getElementById("status").textContent = "Backend unreachable");
-  </script>
+  <header class="top">
+    <h1><span aria-hidden="true">🌅</span> Golden Hour</h1>
+    <button id="unit-toggle" class="chip-btn" type="button" aria-label="Switch temperature unit">°C</button>
+  </header>
+
+  <main>
+    <p class="tagline">Your best 20–40 minutes outside today, and one small thing to do with them.</p>
+
+    <!-- R1: location -->
+    <section id="locate" class="card">
+      <p id="locate-status" role="status">Finding your location…</p>
+      <form id="city-form" hidden>
+        <label for="city">Search for your city</label>
+        <div class="row">
+          <input id="city" name="city" type="search" placeholder="e.g. Pune" minlength="2" autocomplete="address-level2" required>
+          <button type="submit">Search</button>
+        </div>
+        <ul id="city-results" class="choices"></ul>
+      </form>
+    </section>
+
+    <!-- R2: free time -->
+    <section id="when" class="card" hidden>
+      <p class="muted">📍 <span id="place-label"></span> · <button id="change-place" class="link" type="button">change</button></p>
+      <h2>When are you free today?</h2>
+      <p class="muted small">Leave this empty if you're free until sunset.</p>
+      <ul id="ranges" class="ranges"></ul>
+      <button id="add-range" class="secondary" type="button">+ Add free time</button>
+      <button id="plan-btn" class="primary" type="button">Find my golden hour</button>
+      <p id="plan-error" class="error" role="alert" hidden></p>
+    </section>
+
+    <!-- R3 + R5: chosen window -->
+    <section id="plan" class="card highlight" hidden aria-live="polite">
+      <p id="plan-note" class="note" hidden></p>
+      <div id="best">
+        <p class="eyebrow"><span id="best-day"></span> · <span id="best-duration"></span></p>
+        <p class="big-time" id="best-time"></p>
+        <p class="score"><span id="best-score"></span><span class="muted">/100</span></p>
+        <ul id="best-reasons" class="reasons"></ul>
+        <p id="best-weather" class="muted small"></p>
+        <p id="countdown" class="countdown"></p>
+        <button id="ics-btn" class="secondary" type="button">📅 Add to calendar</button>
+      </div>
+      <div id="alts-wrap" hidden>
+        <h3>Other good times</h3>
+        <ul id="alts" class="choices"></ul>
+      </div>
+    </section>
+
+    <!-- R4: suggestion -->
+    <section id="suggestion" class="card" hidden aria-live="polite">
+      <div id="suggest-loading">
+        <p><span class="spinner" aria-hidden="true"></span> Gemma is thinking of something to do… <span id="suggest-elapsed">0s</span></p>
+        <p class="muted small">It's an open-weight model running on our own server, not a big cloud API, so it can take up to half a minute.</p>
+      </div>
+      <div id="suggest-body" hidden>
+        <p class="eyebrow">What to do <span id="suggest-source" class="badge" hidden>offline pick</span></p>
+        <h2 id="suggest-title"></h2>
+        <ol id="suggest-steps"></ol>
+        <p><strong>Notice:</strong> <span id="suggest-notice"></span></p>
+        <p id="suggest-bring-wrap"><strong>Bring:</strong> <span id="suggest-bring"></span></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Suggestions by <a href="https://ai.google.dev/gemma">Gemma</a> (open weights) via <a href="https://ollama.com">Ollama</a> ·
+      Weather by <a href="https://open-meteo.com">Open-Meteo</a> ·
+      <a href="https://github.com/Tanay3484/golden-hour">Source</a> (MIT)</p>
+    <p class="small">No accounts, no tracking. Your location is used for one forecast lookup and never stored.</p>
+  </footer>
+
+  <template id="range-row">
+    <li class="range">
+      <input type="time" class="start" aria-label="Free from" required>
+      <span aria-hidden="true">–</span>
+      <input type="time" class="end" aria-label="Free until" required>
+      <button type="button" class="remove link" aria-label="Remove this time">✕</button>
+    </li>
+  </template>
 </body>
 </html>

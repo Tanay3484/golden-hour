@@ -216,7 +216,7 @@ suggestion loading → suggestion shown*. The °C/°F toggle is stored in `local
 **`time.js` (@human)** exports:
 
 ```js
-startCountdown(el, startIso, endIso)   // updates every second: "in 1h 12m" → "now — go!" → "done"
+startCountdown(el, startIso, endIso, timeZone)   // updates every second: "in 1h 12m" → "now — go!" → "done"
 buildIcs({title, description, startIso, endIso, timezone})  // returns an .ics string (VCALENDAR/VEVENT)
 downloadIcs(icsString, filename)       // Blob + temporary <a download>
 ```
@@ -259,6 +259,9 @@ downloadIcs(icsString, filename)       // Blob + temporary <a download>
 ## Changelog
 
 - 2026-10-08 — Initial draft.
+- 2026-10-09 — T9: `startCountdown` also takes the location's IANA `timeZone` (a searched city can
+  differ from the browser's zone); `.ics` uses UTC times plus a 10-minute alarm. `time.js` is tested
+  in CI with Node (`tests/js/time.test.mjs`).
 - 2026-10-09 — T6: local testing showed both Gemma sizes invent street/landmark names when given a
   place, and ignore rain unless told exactly what to do. The prompt now forbids naming real places
   (`place_name` is passed as "region, for climate only") and, when rain ≥ 50%, requires the first

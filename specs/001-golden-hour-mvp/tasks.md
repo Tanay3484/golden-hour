@@ -7,27 +7,25 @@
 Each task is one commit. The commit message starts with the task ID and requirement IDs, e.g.
 `T3 (R3.2): score_window baseline`. Tick the box when the "Done when" check passes.
 
-## Your tasks at a glance (@human)
+## Ownership change (2026-10-09)
 
-| Task | What you write | Why it's yours |
-|------|----------------|----------------|
-| **T3** | `scoring.py`: the window-picking brain | The core logic of the app. Pure Python, very testable, and the numbers are yours to tune |
-| **T6** | `prompts.py` + `fallbacks.py`: the voice of the app | Prompt engineering against a small open model is what the post will be about |
-| **T9** | `static/time.js`: countdown + `.ics` export | Self-contained JS with fiddly date edge cases |
-| **T12** | Use it outside and document it | Bonus points in judging, and only you can do it |
-| **T13** | The DEV post (AI helps outline and edit) | Writing quality is the most heavily weighted criterion |
+Tanay is studying for the GRE (Monday) and handed the build over to the AI to hit the Sunday deadline. The
+original plan had T3, T6 and T9 as `@human`. Tanay wrote the first `score_window` rules, and they're now
+`@ai`. Still human-only: **T12** (going outside) and the final edit and submission of **T13** (the post).
 
-The AI side is built around your interfaces (design §4). Until your module lands, routes call a stub that raises
-`NotImplementedError`, and API tests use dependency overrides, so no one waits on anyone.
+| Who | Tasks |
+|-----|-------|
+| @ai | T1–T11, T14, T13 draft |
+| @human | T12, T13 final edit + submit, Render "Apply" click in T10 |
 
-## Schedule
+## Schedule (revised)
 
 | Day | @ai | @human |
 |-----|-----|--------|
-| Thu 10-08 | T1, T2, T4, T11 | T3 |
-| Fri 10-09 | T5, T7, T8, T10 | T6, T9 |
-| Sat 10-10 | deploy fixes, T14 | T12 (go outside!) |
-| Sun 10-11 | T13 support | T13, submit |
+| Thu 10-08 | T1, T2, T4, T11 ✅ | — |
+| Fri 10-09 | T3, T5–T10, T13 draft | Render Apply click (2 min) |
+| Sat 10-10 | T14 against live URL | GRE prep (optional: T12 as a study break) |
+| Sun 10-11 | fixes | T13 review + submit |
 
 ## Tasks
 
@@ -44,13 +42,13 @@ The AI side is built around your interfaces (design §4). Until your module land
   `tests/fixtures/`.
   *Done when:* tests against `MockTransport` pass and one manual call against the live API succeeds.
 
-- [ ] **T11 @ai: CI** (N5)
+- [x] **T11 @ai: CI** (N5)
   GitHub Actions: Python 3.11, `pip install -e .[dev]`, `ruff check .`, `pytest`.
   *Done when:* the badge in the README is green.
 
 ### Picking the window
 
-- [ ] **T3 @human: Scoring** (R2.2, R2.3, R3.2, R3.3)
+- [x] **T3 @ai (was @human): Scoring** (R2.2, R2.3, R3.2, R3.3)
   Implement `scoring.py` per design §4.2. Suggested order, one commit each:
   1. `weather_for` + tests
   2. `score_window` + table-driven tests (rainy, hot, windy, perfect, golden hour)
@@ -62,7 +60,7 @@ The AI side is built around your interfaces (design §4). Until your module land
   Ask the AI for hints, a review, or test scaffolding whenever you like. It won't write the implementation.
   *Done when:* all scoring tests pass and the §4.2 numbers match the code, or the spec is updated to match.
 
-- [x] **T4 @ai: `/api/geocode` + `/api/plan` routes** (R1.2, R1.3, R2, R3) _(live real-plan check pending T3)_
+- [x] **T4 @ai: `/api/geocode` + `/api/plan` routes** (R1.2, R1.3, R2, R3) _(live real-plan check done 2026-10-09)_
   Wire the routes with `get_weather` / `get_now` dependencies; 502 on upstream failure. Before T3 lands,
   tests override the scoring dependency with a fake.
   *Done when:* API tests pass, and `/api/plan` returns a real plan locally once T3 is merged.
@@ -74,7 +72,7 @@ The AI side is built around your interfaces (design §4). Until your module land
   normalization in `config.py`; `GH_LLM_TIMEOUT_S` setting.
   *Done when:* `MockTransport` tests pass and a manual call against local `gemma3:4b` returns valid JSON.
 
-- [ ] **T6 @human: Prompt + fallbacks** (R4.1, R4.3, R4.4)
+- [ ] **T6 @ai (was @human): Prompt + fallbacks** (R4.1, R4.3, R4.4)
   `prompts.build_messages(ctx)` and `fallbacks.py` (≥ 8 activities with tags, `pick_fallback`). Try the
   prompt against both `gemma3:1b` and `gemma3:4b` locally and note the differences. That's material for
   the post.
@@ -92,7 +90,7 @@ The AI side is built around your interfaces (design §4). Until your module land
   alternates, suggestion loading/progress, °C/°F toggle. Leaves mount points for T9.
   *Done when:* the full flow works locally at 360 px wide; page weight < 200 KB.
 
-- [ ] **T9 @human: Countdown + calendar** (R5.1, R5.2)
+- [ ] **T9 @ai (was @human): Countdown + calendar** (R5.1, R5.2)
   `static/time.js` per design §4.5, hooked into the mount points from T8.
   *Done when:* the countdown passes through "in Xm" → "now — go!" → "done", and the downloaded `.ics`
   imports correctly into Google Calendar and your phone's calendar at the right local time.
@@ -105,7 +103,7 @@ The AI side is built around your interfaces (design §4). Until your module land
   *Done when:* the live URL's health check is OK and a suggestion comes back with `source: "model"` in
   ≤ 45 s.
 
-- [ ] **T14 @human+ai: Acceptance check** (all)
+- [ ] **T14 @ai: Acceptance check** (all)
   Run the checklist below against the live URL and fix or log anything that fails.
 
 - [ ] **T12 @human: Touch grass** (D4)

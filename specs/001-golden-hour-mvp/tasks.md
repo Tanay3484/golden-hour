@@ -38,7 +38,7 @@ The AI side is built around your interfaces (design §4). Until your module land
   *Done when:* model tests pass. `scoring.py` exists with the five signatures from §4.2, each raising
   `NotImplementedError`.
 
-- [ ] **T2 @ai: Open-Meteo client** (R1.2, R3.1)
+- [x] **T2 @ai: Open-Meteo client** (R1.2, R3.1)
   `weather.py`: `fetch_forecast(lat, lon) -> Forecast` (2 days, hourly temp/precip-prob/wind/UV/cloud,
   daily sunrise/sunset, `timezone=auto`) and `geocode(q) -> list[Place]`. Recorded fixtures go in
   `tests/fixtures/`.

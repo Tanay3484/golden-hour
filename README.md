@@ -1,5 +1,7 @@
 # Golden Hour
 
+[![CI](https://github.com/Tanay3484/golden-hour/actions/workflows/ci.yml/badge.svg)](https://github.com/Tanay3484/golden-hour/actions/workflows/ci.yml)
+
 > Your best 20–40 minutes outside today — planned by an open-weight model running on your own machine.
 
 Golden Hour looks at today's weather, sunset time, and the free time you have, then uses a locally-running

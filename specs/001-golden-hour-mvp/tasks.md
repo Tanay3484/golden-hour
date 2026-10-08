@@ -62,7 +62,7 @@ The AI side is built around your interfaces (design §4). Until your module land
   Ask the AI for hints, a review, or test scaffolding whenever you like. It won't write the implementation.
   *Done when:* all scoring tests pass and the §4.2 numbers match the code, or the spec is updated to match.
 
-- [ ] **T4 @ai: `/api/geocode` + `/api/plan` routes** (R1.2, R1.3, R2, R3)
+- [x] **T4 @ai: `/api/geocode` + `/api/plan` routes** (R1.2, R1.3, R2, R3) _(live real-plan check pending T3)_
   Wire the routes with `get_weather` / `get_now` dependencies; 502 on upstream failure. Before T3 lands,
   tests override the scoring dependency with a fake.
   *Done when:* API tests pass, and `/api/plan` returns a real plan locally once T3 is merged.

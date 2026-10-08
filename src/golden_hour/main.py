@@ -1,19 +1,72 @@
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
+from functools import lru_cache
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 
-from golden_hour import __version__
+from golden_hour import __version__, scoring
 from golden_hour.config import settings
+from golden_hour.models import Forecast, Place, Plan, PlanRequest, TimeRange
+from golden_hour.weather import WeatherClient, WeatherError
 
 STATIC_DIR = Path(__file__).parent / "static"
 
+Planner = Callable[[list[TimeRange], Forecast, datetime], Plan]
+
 app = FastAPI(title="Golden Hour", version=__version__)
+
+
+# Dependencies — overridden in tests so nothing touches the network or the real clock.
+
+
+@lru_cache
+def get_weather() -> WeatherClient:
+    return WeatherClient()
+
+
+def get_clock() -> Callable[[], datetime]:
+    return lambda: datetime.now(UTC)
+
+
+def get_planner() -> Planner:
+    return scoring.plan_day
+
+
+# Routes
 
 
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok", "version": __version__, "model": settings.model}
+
+
+@app.get("/api/geocode", response_model=list[Place])
+def geocode(
+    q: str = Query(min_length=2, max_length=100),
+    weather: WeatherClient = Depends(get_weather),
+) -> list[Place]:
+    try:
+        return weather.geocode(q)
+    except WeatherError as e:
+        raise HTTPException(502, "weather unavailable") from e
+
+
+@app.post("/api/plan", response_model=Plan)
+def plan(
+    req: PlanRequest,
+    weather: WeatherClient = Depends(get_weather),
+    clock: Callable[[], datetime] = Depends(get_clock),
+    planner: Planner = Depends(get_planner),
+) -> Plan:
+    # Coordinates live only for this request: never logged or stored (R1.3).
+    try:
+        forecast = weather.fetch_forecast(req.lat, req.lon)
+    except WeatherError as e:
+        raise HTTPException(502, "weather unavailable") from e
+    now_local = (clock() + timedelta(seconds=forecast.utc_offset_seconds)).replace(tzinfo=None)
+    return planner(req.free_ranges, forecast, now_local)
 
 
 @app.get("/")

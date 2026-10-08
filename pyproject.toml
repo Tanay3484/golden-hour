@@ -31,3 +31,6 @@ line-length = 100
 [tool.ruff.lint]
 # Naive datetimes are intentional (local time at forecast location, design §3), so no DTZ rules.
 select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]

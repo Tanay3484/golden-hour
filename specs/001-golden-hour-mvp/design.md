@@ -259,5 +259,10 @@ downloadIcs(icsString, filename)       // Blob + temporary <a download>
 ## Changelog
 
 - 2026-10-08 — Initial draft.
+- 2026-10-09 — T6: local testing showed both Gemma sizes invent street/landmark names when given a
+  place, and ignore rain unless told exactly what to do. The prompt now forbids naming real places
+  (`place_name` is passed as "region, for climate only") and, when rain ≥ 50%, requires the first
+  step to say how to stay dry. `coerce` also drops "None"-style `bring` items and rejects empty
+  titles or notices (→ fallback).
 - 2026-10-09 — T3: `pick_windows` tie-break prefers golden hour before earlier start.
 - 2026-10-08 — T1: added `Place` and `PlanRequest` to §4.1 (they were implied by §4.4).

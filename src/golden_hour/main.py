@@ -8,7 +8,17 @@ from fastapi.responses import FileResponse
 
 from golden_hour import __version__, scoring
 from golden_hour.config import settings
-from golden_hour.models import Forecast, Place, Plan, PlanRequest, TimeRange
+from golden_hour.llm import OllamaClient
+from golden_hour.models import (
+    Forecast,
+    Place,
+    Plan,
+    PlanRequest,
+    Suggestion,
+    SuggestionContext,
+    TimeRange,
+)
+from golden_hour.suggest import suggest
 from golden_hour.weather import WeatherClient, WeatherError
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -24,6 +34,11 @@ app = FastAPI(title="Golden Hour", version=__version__)
 @lru_cache
 def get_weather() -> WeatherClient:
     return WeatherClient()
+
+
+@lru_cache
+def get_llm() -> OllamaClient:
+    return OllamaClient(settings.ollama_url, settings.model, settings.llm_timeout_s)
 
 
 def get_clock() -> Callable[[], datetime]:
@@ -67,6 +82,12 @@ def plan(
         raise HTTPException(502, "weather unavailable") from e
     now_local = (clock() + timedelta(seconds=forecast.utc_offset_seconds)).replace(tzinfo=None)
     return planner(req.free_ranges, forecast, now_local)
+
+
+@app.post("/api/suggest", response_model=Suggestion)
+def suggestion(ctx: SuggestionContext, llm: OllamaClient = Depends(get_llm)) -> Suggestion:
+    # Never fails: falls back to a curated activity if the model is down or returns junk (R4.4).
+    return suggest(ctx, llm)
 
 
 @app.get("/")

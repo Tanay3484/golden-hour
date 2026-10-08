@@ -47,6 +47,7 @@ infrastructure we control, using only open data.
   deterministic, unit-tested function (dry, comfortable temperature, low wind, daylight; bonus near golden
   hour).
 - R3.3 The system SHALL return the top-scoring slot plus up to two alternates, each with a one-line reason.
+- R3.4 The UI SHALL display temperatures in °C by default, with a °F toggle (client-side conversion).
 
 ### R4 — The suggestion (AI)
 *As a user, I want one concrete thing to do outside, so I actually go.*
@@ -84,7 +85,7 @@ infrastructure we control, using only open data.
 ## 6. Non-goals (MVP)
 
 - Accounts, history, streaks, social features.
-- Reading the user's real calendar (Google/Outlook).
+- Reading the user's real calendar (Google/Outlook) or importing `.ics` files.
 - Push notifications when the page is closed.
 - Route/map generation.
 
@@ -95,14 +96,16 @@ infrastructure we control, using only open data.
 - D3 DEV post following the template: What I Built, Demo, Code, How I Built It, **Why Open Innovation Matters**.
 - D4 Bonus: actually use it outside and document the experience (photos + what the model suggested).
 
-## 8. Open questions (must be resolved before approval)
+## 8. Decisions (formerly open questions)
 
-1. **Model size on Render.** `gemma3:1b` fits a ~2 GB CPU instance but is less creative; `gemma3:4b` needs
-   ~4 GB+ RAM and is slow on CPU. Proposal: 1b on Render, 4b locally (configurable via `GH_MODEL`). OK?
-2. **Free-time input.** Manual ranges only (proposed), or also an .ics upload?
-3. **Units/locale.** Metric by default with a °C/°F toggle?
-4. **Partner prizes.** Target *Best Use of Render* and *Best Use of Gemma* only, or anything else?
+Resolved with the proposed defaults on 2026-10-08. Override any of them during review.
+
+1. **Model size.** `gemma3:1b` on Render (CPU, ~2 GB instance); `gemma3:4b` locally. Switch via `GH_MODEL`.
+2. **Free-time input.** Manual ranges only. `.ics` *import* is a non-goal for the MVP.
+3. **Units.** Metric by default, °F toggle in the UI (→ R3.4).
+4. **Partner prizes.** Target *Best Use of Render* and *Best Use of Gemma*.
 
 ## Changelog
 
 - 2026-10-07 — Initial draft.
+- 2026-10-08 — Resolved open questions with defaults; added R3.4.

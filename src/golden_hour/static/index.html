@@ -3,112 +3,237 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Golden Hour</title>
-  <meta name="description" content="Your best 20–40 minutes outside today, planned by an open-weight model.">
-  <meta name="theme-color" content="#e07a1f">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌅</text></svg>">
+  <title>Golden Hour · Your best time outside today</title>
+  <meta name="description" content="Golden Hour finds your best 20–40 minutes outside today and the places nearby worth going to, planned by an open-weight model.">
+  <meta name="theme-color" content="#fbf8f4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f0d0b" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffc46b'/%3E%3Cstop offset='1' stop-color='%23e2711d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Ccircle cx='16' cy='19' r='7' fill='%23fff'/%3E%3Crect x='5' y='21' width='22' height='6' fill='url(%23g)'/%3E%3Crect x='7' y='22' width='18' height='2' rx='1' fill='%23fff' opacity='.8'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="/static/style.css">
   <script type="module" src="/static/app.js"></script>
 </head>
 <body>
-  <header class="top">
-    <h1><span aria-hidden="true">🌅</span> Golden Hour</h1>
-    <button id="unit-toggle" class="chip-btn" type="button" aria-label="Switch temperature unit">°C</button>
+  <!-- Icon sprite: simple strokes, 24x24, currentColor -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+      <symbol id="i-sunset" viewBox="0 0 24 24"><path d="M17 18a5 5 0 0 0-10 0M12 9V2M4.2 10.2l1.4 1.4M1 18h2M21 18h2M18.4 11.6l1.4-1.4M23 22H1M16 5l-4 4-4-4"/></symbol>
+      <symbol id="i-sunrise" viewBox="0 0 24 24"><path d="M17 18a5 5 0 0 0-10 0M12 2v7M4.2 10.2l1.4 1.4M1 18h2M21 18h2M18.4 11.6l1.4-1.4M23 22H1M8 6l4-4 4 4"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+      <symbol id="i-temp" viewBox="0 0 24 24"><path d="M14 14.8V4a2 2 0 0 0-4 0v10.8a4 4 0 1 0 4 0z"/></symbol>
+      <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+      <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h10a3 3 0 1 0-3-3M3 16h13a3 3 0 1 1-3 3M3 12h17"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
+      <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="13" cy="4" r="1.6"/><path d="M9 21l2-6 3 2v4M11 15l1-5 3 3 3 1M12 10l-3 1-2 4"/></symbol>
+      <symbol id="i-locate" viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8z"/></symbol>
+      <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9zM19 15l.8 2 2 .9-2 .9-.8 2-.8-2-2-.9 2-.9z"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+      <symbol id="i-park" viewBox="0 0 24 24"><path d="M12 22v-5M12 3l6 9h-3l4 5H5l4-5H6z"/></symbol>
+      <symbol id="i-water" viewBox="0 0 24 24"><path d="M2 9c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2M2 15c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/></symbol>
+      <symbol id="i-view" viewBox="0 0 24 24"><path d="M2 20l7-11 4 6 3-4 6 9z"/><circle cx="17" cy="6" r="2"/></symbol>
+      <symbol id="i-art" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.5-1.6 0-1.4-1.2-1.7-1.2-2.9 0-1 .8-1.5 1.8-1.5H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 21h18M5 21V10M9.5 21V10M14.5 21V10M19 21V10M2 10l10-6 10 6z"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2zM8 7h8"/></symbol>
+      <symbol id="i-cafe" viewBox="0 0 24 24"><path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v2M12 3v2"/></symbol>
+      <symbol id="i-sport" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+      <symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l2-3h4l2 3"/><circle cx="12" cy="13.5" r="3.5"/></symbol>
+      <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 6-14 15-14 0 9-6 15-14 15zM5 19l7-7"/></symbol>
+      <symbol id="i-github" viewBox="0 0 16 16"><path fill="currentColor" stroke="none" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/" aria-label="Golden Hour home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Golden Hour</span>
+      </a>
+      <div class="topbar-actions">
+        <button id="unit-toggle" class="segmented" type="button" aria-label="Temperature unit">
+          <span data-unit="C">°C</span><span data-unit="F">°F</span>
+        </button>
+        <a class="icon-btn" href="https://github.com/Tanay3484/golden-hour" target="_blank" rel="noopener" aria-label="Source code on GitHub">
+          <svg class="icon"><use href="#i-github"/></svg>
+        </a>
+      </div>
+    </div>
   </header>
 
-  <main>
-    <p class="tagline">Your best 20–40 minutes outside today, and one small thing to do with them.</p>
+  <main class="shell">
+    <section class="intro">
+      <p class="eyebrow"><svg class="icon"><use href="#i-sparkle"/></svg> Open source · runs on open models</p>
+      <h1>Find your golden hour.</h1>
+      <p class="lede">The best 20–40 minutes to be outside today, and the places nearby worth walking to.</p>
+    </section>
 
-    <!-- R1: location -->
-    <section id="locate" class="card">
-      <p id="locate-status" role="status">Finding your location…</p>
-      <form id="city-form" hidden>
-        <label for="city">Search for your city</label>
-        <div class="row">
-          <input id="city" name="city" type="search" placeholder="e.g. Pune" minlength="2" autocomplete="address-level2" required>
-          <button type="submit">Search</button>
+    <div class="layout">
+      <!-- Planner -->
+      <aside class="panel planner" aria-label="Plan your time outside">
+        <div class="step" id="step-location">
+          <div class="step-head"><span class="step-num">1</span><h2>Where are you?</h2></div>
+
+          <div id="locate">
+            <p id="locate-status" class="muted" role="status"><span class="spinner" aria-hidden="true"></span> Finding your location…</p>
+            <form id="city-form" hidden>
+              <label for="city" class="sr-only">City</label>
+              <div class="input-group">
+                <svg class="icon input-icon" aria-hidden="true"><use href="#i-search"/></svg>
+                <input id="city" name="city" type="search" placeholder="Search for a city" minlength="2" autocomplete="address-level2" required>
+                <button type="submit" class="btn btn-quiet">Search</button>
+              </div>
+              <ul id="city-results" class="options"></ul>
+            </form>
+          </div>
+
+          <div id="place-row" class="place-chosen" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
+            <span id="place-label"></span>
+            <button id="change-place" class="link" type="button">Change</button>
+          </div>
         </div>
-        <ul id="city-results" class="choices"></ul>
-      </form>
-    </section>
 
-    <!-- R2: free time -->
-    <section id="when" class="card" hidden>
-      <p class="muted">📍 <span id="place-label"></span> · <button id="change-place" class="link" type="button">change</button></p>
-      <h2>When are you free today?</h2>
-      <p class="muted small">Leave this empty if you're free until sunset.</p>
-      <ul id="ranges" class="ranges"></ul>
-      <button id="add-range" class="secondary" type="button">+ Add free time</button>
-      <h3>What do you enjoy? <span class="muted small">Up to 3, optional</span></h3>
-      <div id="hobbies" class="chips" role="group" aria-label="Hobbies"></div>
-      <button id="plan-btn" class="primary" type="button">Find my golden hour</button>
-      <p id="plan-error" class="error" role="alert" hidden></p>
-    </section>
+        <div id="when" hidden>
+          <div class="step">
+            <div class="step-head"><span class="step-num">2</span><h2>When are you free?</h2></div>
+            <p class="hint">Leave it empty and we'll assume you're free until sunset.</p>
+            <ul id="ranges" class="ranges"></ul>
+            <button id="add-range" class="btn btn-quiet btn-sm" type="button"><svg class="icon"><use href="#i-plus"/></svg> Add a time</button>
+          </div>
 
-    <!-- R3 + R5: chosen window -->
-    <section id="plan" class="card highlight" hidden aria-live="polite">
-      <p id="plan-note" class="note" hidden></p>
-      <div id="best">
-        <p class="eyebrow"><span id="best-day"></span> · <span id="best-duration"></span></p>
-        <p class="big-time" id="best-time"></p>
-        <p class="score"><span id="best-score"></span><span class="muted">/100</span></p>
-        <ul id="best-reasons" class="reasons"></ul>
-        <p id="best-weather" class="muted small"></p>
-        <p id="countdown" class="countdown"></p>
-        <button id="ics-btn" class="secondary" type="button">📅 Add to calendar</button>
-      </div>
-      <div id="alts-wrap" hidden>
-        <h3>Other good times</h3>
-        <ul id="alts" class="choices"></ul>
-      </div>
-    </section>
+          <div class="step">
+            <div class="step-head"><span class="step-num">3</span><h2>What do you enjoy?</h2></div>
+            <p class="hint">Pick up to 3. We'll find places that suit them.</p>
+            <div id="hobbies" class="chips" role="group" aria-label="Hobbies"></div>
+          </div>
 
-    <!-- Spec 002: real places nearby -->
-    <section id="places" class="card" hidden aria-live="polite">
-      <p class="eyebrow">Top 5 near you</p>
-      <p id="places-loading"><span class="spinner" aria-hidden="true"></span> Looking for places near you… <span id="places-elapsed">0s</span></p>
-      <ol id="places-list" class="places"></ol>
-      <p id="places-attribution" class="muted small" hidden>Places © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> · lines by Gemma</p>
-    </section>
+          <button id="plan-btn" class="btn btn-primary btn-block" type="button">
+            <svg class="icon"><use href="#i-sunset"/></svg> <span class="btn-label">Find my golden hour</span>
+          </button>
+          <p id="plan-error" class="error" role="alert" hidden></p>
+        </div>
+      </aside>
 
-    <!-- R4: suggestion (also the fallback when no places are found) -->
-    <section id="suggestion" class="card" hidden aria-live="polite">
-      <p id="suggest-note" class="muted small" hidden>Couldn't find places nearby right now, so here's an idea instead.</p>
-      <div id="suggest-loading">
-        <p><span class="spinner" aria-hidden="true"></span> Gemma is thinking of something to do… <span id="suggest-elapsed">0s</span></p>
-        <p class="muted small">It's an open-weight model running on our own server, not a big cloud API, so it can take up to half a minute.</p>
-      </div>
-      <div id="suggest-body" hidden>
-        <p class="eyebrow">What to do <span id="suggest-source" class="badge" hidden>offline pick</span></p>
-        <h2 id="suggest-title"></h2>
-        <ol id="suggest-steps"></ol>
-        <p><strong>Notice:</strong> <span id="suggest-notice"></span></p>
-        <p id="suggest-bring-wrap"><strong>Bring:</strong> <span id="suggest-bring"></span></p>
-      </div>
-    </section>
+      <!-- Results -->
+      <section class="results" aria-live="polite">
+        <div id="empty" class="panel empty">
+          <svg class="empty-art" viewBox="0 0 240 120" aria-hidden="true">
+            <defs>
+              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--sky-1)"/><stop offset="1" stop-color="var(--sky-2)"/></linearGradient>
+            </defs>
+            <rect width="240" height="120" rx="16" fill="url(#sky)"/>
+            <circle cx="120" cy="88" r="30" fill="var(--sun)"/>
+            <rect x="0" y="88" width="240" height="32" fill="var(--ground)"/>
+            <path d="M24 100h70M146 100h70M54 110h132" stroke="var(--ground-line)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <h2>Your plan will appear here</h2>
+          <ol class="how">
+            <li><svg class="icon"><use href="#i-clock"/></svg><span><strong>The best window</strong> from the hourly forecast and sunset</span></li>
+            <li><svg class="icon"><use href="#i-pin"/></svg><span><strong>5 real places</strong> within walking distance, matched to your hobbies</span></li>
+            <li><svg class="icon"><use href="#i-sparkle"/></svg><span><strong>One line each from Gemma</strong>, an open model, on what to do there right now</span></li>
+          </ol>
+        </div>
+
+        <!-- R3 + R5: chosen window -->
+        <article id="plan" class="hero" hidden>
+          <p id="plan-note" class="note" hidden></p>
+          <div id="best">
+            <div class="hero-top">
+              <div>
+                <p class="hero-eyebrow"><span id="best-day"></span> · <span id="best-duration"></span></p>
+                <p class="big-time" id="best-time"></p>
+                <p id="countdown" class="countdown"></p>
+              </div>
+              <div class="score" aria-label="Score">
+                <svg viewBox="0 0 64 64" class="score-ring" aria-hidden="true">
+                  <circle cx="32" cy="32" r="27" class="ring-track"/>
+                  <circle cx="32" cy="32" r="27" class="ring-value" id="score-arc"/>
+                </svg>
+                <span class="score-num"><span id="best-score"></span><small>/100</small></span>
+              </div>
+            </div>
+            <ul id="best-reasons" class="tags"></ul>
+            <div id="best-weather" class="stats"></div>
+            <div id="timeline" class="timeline" aria-hidden="true"></div>
+            <div class="hero-actions">
+              <button id="ics-btn" class="btn btn-glass" type="button"><svg class="icon"><use href="#i-calendar"/></svg> Add to calendar</button>
+            </div>
+          </div>
+          <div id="alts-wrap" hidden>
+            <p class="hero-subhead">Your best windows</p>
+            <ul id="alts" class="alts"></ul>
+          </div>
+        </article>
+
+        <!-- Spec 002: real places nearby -->
+        <section id="places" class="panel" hidden>
+          <div class="panel-head">
+            <h2>Top 5 near you</h2>
+            <span class="pill"><svg class="icon"><use href="#i-sparkle"/></svg> Lines by Gemma</span>
+          </div>
+          <div id="places-loading" class="skeletons">
+            <p class="muted small"><span class="spinner" aria-hidden="true"></span> Looking for places near you… <span id="places-elapsed">0s</span></p>
+            <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
+          </div>
+          <ol id="places-list" class="places"></ol>
+          <p id="places-attribution" class="fineprint" hidden>Places © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></p>
+        </section>
+
+        <!-- R4: suggestion (also the fallback when no places are found) -->
+        <section id="suggestion" class="panel" hidden>
+          <p id="suggest-note" class="notice" hidden><svg class="icon"><use href="#i-alert"/></svg> Couldn't reach map data right now, so here's an idea instead.</p>
+          <div id="suggest-loading" class="thinking">
+            <span class="spinner" aria-hidden="true"></span>
+            <div>
+              <p><strong>Gemma is thinking of something to do…</strong> <span id="suggest-elapsed" class="muted">0s</span></p>
+              <p class="muted small">It's an open model on our own small server, not a big cloud API, so it takes a few seconds.</p>
+            </div>
+          </div>
+          <div id="suggest-body" hidden>
+            <div class="panel-head">
+              <h2 id="suggest-title"></h2>
+              <span id="suggest-source" class="pill pill-quiet" hidden>Offline pick</span>
+            </div>
+            <ol id="suggest-steps" class="steps"></ol>
+            <div class="callouts">
+              <p class="callout"><svg class="icon"><use href="#i-sparkle"/></svg><span><strong>Notice</strong> <span id="suggest-notice"></span></span></p>
+              <p class="callout" id="suggest-bring-wrap"><svg class="icon"><use href="#i-walk"/></svg><span><strong>Bring</strong> <span id="suggest-bring"></span></span></p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
   </main>
 
-  <footer>
-    <p>Suggestions by <a href="https://ai.google.dev/gemma">Gemma</a> (open weights) via <a href="https://ollama.com">Ollama</a> ·
-      Weather by <a href="https://open-meteo.com">Open-Meteo</a> ·
-      <a href="https://github.com/Tanay3484/golden-hour">Source</a> (MIT)</p>
-    <p class="small">No accounts, no tracking. Your location is used for a forecast lookup and, as an approximate (~1 km) area, to find nearby places on OpenStreetMap. It's never stored.</p>
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>Built for the DEV Hacktoberfest 2026 “Touch Grass” challenge. Suggestions by <a href="https://ai.google.dev/gemma">Gemma</a> via <a href="https://ollama.com">Ollama</a> · Weather by <a href="https://open-meteo.com">Open-Meteo</a> · Places by <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://github.com/Tanay3484/golden-hour">Source (MIT)</a></p>
+      <p>No accounts, no tracking. Your location is used for a forecast lookup and, as an approximate (~1 km) area, to find nearby places on OpenStreetMap. It's never stored.</p>
+    </div>
   </footer>
 
-  <template id="place-row">
+  <template id="place-row-tpl">
     <li class="place">
-      <p class="place-name"></p>
-      <p class="muted small"><span class="place-meta"></span> · <a class="place-map" target="_blank" rel="noopener">Map ↗</a></p>
-      <p class="place-line loading"></p>
+      <span class="place-icon"><svg class="icon"><use href="#i-park"/></svg></span>
+      <div class="place-body">
+        <div class="place-top">
+          <p class="place-name"></p>
+          <a class="place-map btn btn-quiet btn-xs" target="_blank" rel="noopener">Map <svg class="icon"><use href="#i-external"/></svg></a>
+        </div>
+        <p class="place-meta"><span class="place-kind"></span><span class="dot" aria-hidden="true">·</span><svg class="icon"><use href="#i-walk"/></svg><span class="place-walk"></span></p>
+        <p class="place-line loading"></p>
+      </div>
     </li>
   </template>
 
   <template id="range-row">
     <li class="range">
-      <input type="time" class="start" aria-label="Free from" required>
-      <span aria-hidden="true">–</span>
-      <input type="time" class="end" aria-label="Free until" required>
-      <button type="button" class="remove link" aria-label="Remove this time">✕</button>
+      <label class="time-field"><span>From</span><input type="time" class="start" required></label>
+      <label class="time-field"><span>Until</span><input type="time" class="end" required></label>
+      <button type="button" class="icon-btn remove" aria-label="Remove this time"><svg class="icon"><use href="#i-x"/></svg></button>
     </li>
   </template>
 </body>

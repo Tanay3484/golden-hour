@@ -1,19 +1,31 @@
-import { buildIcs, downloadIcs, startCountdown } from "./time.js";
+import { buildIcs, downloadIcs, startCountdown, zonedToEpoch } from "./time.js";
 
 const $ = (sel) => document.querySelector(sel);
 
 // Must be defined before `state`, which reads saved hobbies on load.
 const HOBBIES = [
-  ["photography", "📷 Photography"],
-  ["nature", "🐦 Nature & birds"],
-  ["history", "🏛️ History"],
-  ["art", "🎨 Art"],
-  ["running", "🏃 Running & walking"],
-  ["reading", "📖 Reading & sketching"],
-  ["coffee", "☕ Coffee outside"],
-  ["sports", "⚽ Sports"],
+  ["photography", "Photography", "i-camera"],
+  ["nature", "Nature & birds", "i-leaf"],
+  ["history", "History", "i-history"],
+  ["art", "Art", "i-art"],
+  ["running", "Running & walking", "i-walk"],
+  ["reading", "Reading & sketching", "i-book"],
+  ["coffee", "Coffee outside", "i-cafe"],
+  ["sports", "Sports", "i-sport"],
 ];
 const MAX_HOBBIES = 3;
+
+const CATEGORY_ICON = {
+  park: "i-park",
+  water: "i-water",
+  view: "i-view",
+  art: "i-art",
+  history: "i-history",
+  museum: "i-history",
+  library: "i-book",
+  cafe: "i-cafe",
+  sport: "i-sport",
+};
 
 const state = {
   loc: null, // { lat, lon, name }
@@ -27,42 +39,55 @@ const state = {
   hobbies: loadHobbies(),
 };
 
-// ---------- hobbies (R7) ----------
+// ---------- tiny DOM helpers ----------
 
-function loadHobbies() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("gh-hobbies") || "[]");
-    const known = new Set(HOBBIES.map(([id]) => id));
-    return Array.isArray(saved) ? saved.filter((h) => known.has(h)).slice(0, MAX_HOBBIES) : [];
-  } catch {
-    return [];
-  }
+function el(tag, className, content) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (content !== undefined) node.append(content);
+  return node;
 }
 
-function saveHobbies() {
+function icon(id) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "icon");
+  svg.setAttribute("aria-hidden", "true");
+  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  use.setAttribute("href", `#${id}`);
+  svg.append(use);
+  return svg;
+}
+
+function button(label, onClick, className) {
+  const b = el("button", className);
+  b.type = "button";
+  b.append(label);
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+async function postJson(url, body) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+function elapsedTimer(node) {
+  const started = Date.now();
+  node.textContent = "0s";
+  return setInterval(() => (node.textContent = `${Math.round((Date.now() - started) / 1000)}s`), 1000);
+}
+
+function store(key, value) {
   try {
-    localStorage.setItem("gh-hobbies", JSON.stringify(state.hobbies));
+    localStorage.setItem(key, value);
   } catch {
     /* storage unavailable: keep in memory only */
   }
-}
-
-function renderHobbies() {
-  const full = state.hobbies.length >= MAX_HOBBIES;
-  $("#hobbies").replaceChildren(
-    ...HOBBIES.map(([id, label]) => {
-      const on = state.hobbies.includes(id);
-      const el = button(label, () => {
-        state.hobbies = on ? state.hobbies.filter((h) => h !== id) : [...state.hobbies, id];
-        saveHobbies();
-        renderHobbies();
-      });
-      el.className = "chip";
-      el.setAttribute("aria-pressed", String(on));
-      el.disabled = full && !on;
-      return el;
-    }),
-  );
 }
 
 // ---------- units (R3.4) ----------
@@ -75,44 +100,69 @@ function loadUnit() {
   }
 }
 
-function saveUnit(unit) {
-  try {
-    localStorage.setItem("gh-unit", unit);
-  } catch {
-    /* storage unavailable: keep in memory only */
-  }
-}
-
 const toUnit = (c) => (state.unit === "F" ? Math.round((c * 9) / 5 + 32) : Math.round(c));
 const fmtTemp = (c) => `${toUnit(c)}°${state.unit}`;
 const convertText = (s) => s.replace(/(-?\d+(?:\.\d+)?)°C/g, (_, c) => fmtTemp(Number(c)));
 
 $("#unit-toggle").addEventListener("click", () => {
   state.unit = state.unit === "C" ? "F" : "C";
-  saveUnit(state.unit);
+  store("gh-unit", state.unit);
   renderUnitButton();
   if (state.chosen) renderWindow(state.chosen);
   if (state.plan) renderAlternates();
 });
 
 function renderUnitButton() {
-  $("#unit-toggle").textContent = `°${state.unit}`;
+  for (const s of document.querySelectorAll("#unit-toggle span")) {
+    s.classList.toggle("on", s.dataset.unit === state.unit);
+  }
+  $("#unit-toggle").setAttribute("aria-label", `Temperature unit: °${state.unit}. Switch unit`);
+}
+
+// ---------- hobbies (R7) ----------
+
+function loadHobbies() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("gh-hobbies") || "[]");
+    const known = new Set(HOBBIES.map(([id]) => id));
+    return Array.isArray(saved) ? saved.filter((h) => known.has(h)).slice(0, MAX_HOBBIES) : [];
+  } catch {
+    return [];
+  }
+}
+
+function renderHobbies() {
+  const full = state.hobbies.length >= MAX_HOBBIES;
+  $("#hobbies").replaceChildren(
+    ...HOBBIES.map(([id, label, iconId]) => {
+      const on = state.hobbies.includes(id);
+      const chip = button(label, () => {
+        state.hobbies = on ? state.hobbies.filter((h) => h !== id) : [...state.hobbies, id];
+        store("gh-hobbies", JSON.stringify(state.hobbies));
+        renderHobbies();
+      }, "chip");
+      chip.prepend(icon(iconId));
+      chip.setAttribute("aria-pressed", String(on));
+      chip.disabled = full && !on;
+      return chip;
+    }),
+  );
 }
 
 // ---------- location (R1) ----------
 
 function locate() {
   if (!("geolocation" in navigator)) return showCitySearch("Location isn't available in this browser.");
-  $("#locate-status").textContent = "Finding your location…";
   navigator.geolocation.getCurrentPosition(
     (pos) => setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude, name: null }),
-    () => showCitySearch("No problem, you can search for your city instead."),
+    () => showCitySearch("No problem: search for your city instead."),
     { timeout: 10000, maximumAge: 10 * 60 * 1000 },
   );
 }
 
 function showCitySearch(message) {
   $("#locate").hidden = false;
+  $("#place-row").hidden = true;
   $("#locate-status").textContent = message;
   $("#city-form").hidden = false;
   $("#city").focus();
@@ -123,33 +173,34 @@ $("#city-form").addEventListener("submit", async (e) => {
   const q = $("#city").value.trim();
   const list = $("#city-results");
   list.replaceChildren();
+  const note = (msg) => list.append(el("li", "option-note", msg));
   try {
     const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
     if (!res.ok) throw new Error(res.status);
     const places = await res.json();
-    if (!places.length) {
-      list.append(li(text("No matches. Try a bigger nearby city.")));
-      return;
-    }
+    if (!places.length) return note("No matches. Try a bigger nearby city.");
     for (const p of places) {
       const label = [p.name, p.country].filter(Boolean).join(", ");
-      const btn = button(label, () => setLocation({ lat: p.lat, lon: p.lon, name: label }));
-      list.append(li(btn));
+      const b = button(label, () => setLocation({ lat: p.lat, lon: p.lon, name: label }));
+      b.prepend(icon("i-pin"), " ");
+      list.append(el("li", null, b));
     }
   } catch {
-    list.append(li(text("City search is unavailable right now. Please try again.")));
+    note("City search is unavailable right now. Please try again.");
   }
 });
 
 function setLocation(loc) {
   state.loc = loc;
   $("#locate").hidden = true;
+  $("#place-row").hidden = false;
   $("#place-label").textContent = loc.name ?? "Your current location";
   $("#when").hidden = false;
 }
 
 $("#change-place").addEventListener("click", () => {
   $("#when").hidden = true;
+  $("#city-results").replaceChildren();
   showCitySearch("Search for a city.");
 });
 
@@ -181,13 +232,18 @@ function readRanges() {
 
 $("#plan-btn").addEventListener("click", async () => {
   const btn = $("#plan-btn");
+  const label = btn.querySelector(".btn-label");
   const err = $("#plan-error");
+  const showError = (msg) => {
+    err.textContent = msg;
+    err.hidden = false;
+  };
   err.hidden = true;
   const ranges = readRanges();
   if (ranges.some((r) => r.end <= r.start)) return showError("Each free time needs to end after it starts.");
 
   btn.disabled = true;
-  btn.textContent = "Checking the sky…";
+  label.textContent = "Checking the sky…";
   try {
     const res = await fetch("/api/plan", {
       method: "POST",
@@ -202,17 +258,13 @@ $("#plan-btn").addEventListener("click", async () => {
     showError(e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "Find my golden hour";
-  }
-
-  function showError(msg) {
-    err.textContent = msg;
-    err.hidden = false;
+    label.textContent = "Find my golden hour";
   }
 });
 
 function renderPlan() {
   const { plan } = state;
+  $("#empty").hidden = true;
   $("#plan").hidden = false;
   const note = $("#plan-note");
   note.hidden = !plan.note;
@@ -220,34 +272,91 @@ function renderPlan() {
   $("#best").hidden = !plan.best;
   if (plan.best) choose(plan.best);
   else {
+    $("#places").hidden = true;
     $("#suggestion").hidden = true;
     state.stopCountdown?.();
   }
   renderAlternates();
-  $("#plan").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (window.matchMedia("(max-width: 959px)").matches) {
+    $("#plan").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 const hhmm = (iso) => iso.slice(11, 16);
+
+function stat(iconId, value, label) {
+  const tile = el("div", "stat");
+  tile.append(icon(iconId), el("span", "stat-value", value), el("span", "stat-label", label));
+  return tile;
+}
 
 function renderWindow(w) {
   $("#best-day").textContent = w.day === "today" ? "Today" : "Tomorrow";
   $("#best-duration").textContent = `${w.duration_min} min`;
   $("#best-time").textContent = `${hhmm(w.start)}–${hhmm(w.end)}`;
   $("#best-score").textContent = w.score;
-  $("#best-reasons").replaceChildren(...w.reasons.map((r) => li(text(convertText(r)))));
+  $("#score-arc").style.strokeDashoffset = String(169.6 * (1 - w.score / 100));
+  $("#best-reasons").replaceChildren(...w.reasons.map((r) => el("li", null, convertText(r))));
   const x = w.weather;
-  $("#best-weather").textContent =
-    `${fmtTemp(x.temp_c)} · ${x.precip_prob}% rain · wind ${Math.round(x.wind_kmh)} km/h · UV ${Math.round(x.uv)}`;
+  $("#best-weather").replaceChildren(
+    stat("i-temp", fmtTemp(x.temp_c), "Temperature"),
+    stat("i-drop", `${x.precip_prob}%`, "Chance of rain"),
+    stat("i-wind", `${Math.round(x.wind_kmh)} km/h`, "Wind"),
+    stat("i-sun", String(Math.round(x.uv)), "UV index"),
+  );
+  renderTimeline();
+}
+
+// Daylight bar: sunrise → sunset + 15 min, golden hour shaded, windows marked (R3.3).
+function renderTimeline() {
+  const { plan, chosen } = state;
+  const tz = plan.timezone;
+  const t = (iso) => zonedToEpoch(iso, tz);
+  const start = t(plan.sunrise);
+  const end = t(plan.sunset) + 15 * 60_000;
+  const pct = (ms) => `${Math.min(100, Math.max(0, ((ms - start) / (end - start)) * 100))}%`;
+  const span = (cls, from, to) => {
+    const node = el("div", cls);
+    node.style.left = pct(from);
+    node.style.width = `calc(${pct(to)} - ${pct(from)})`;
+    return node;
+  };
+
+  const track = el("div", "tl-track");
+  track.append(span("tl-golden", t(plan.sunset) - 60 * 60_000, t(plan.sunset)));
+  for (const w of [plan.best, ...plan.alternates].filter(Boolean)) {
+    track.append(span(w === chosen ? "tl-win best" : "tl-win", t(w.start), t(w.end)));
+  }
+  const now = Date.now();
+  if (now > start && now < end) {
+    const marker = el("div", "tl-now");
+    marker.style.left = pct(now);
+    track.append(marker);
+  }
+  const labels = el("div", "tl-labels");
+  const sunrise = el("span");
+  sunrise.append(icon("i-sunrise"), hhmm(plan.sunrise));
+  const sunset = el("span");
+  sunset.append(hhmm(plan.sunset), icon("i-sunset"));
+  labels.append(sunrise, sunset);
+  $("#timeline").replaceChildren(track, labels);
 }
 
 function renderAlternates() {
   const { plan } = state;
-  const options = [plan.best, ...plan.alternates].filter((w) => w && w !== state.chosen);
-  $("#alts-wrap").hidden = !options.length;
+  const options = [plan.best, ...plan.alternates].filter(Boolean);
+  $("#alts-wrap").hidden = options.length < 2;
   $("#alts").replaceChildren(
-    ...options.map((w) =>
-      li(button(`${hhmm(w.start)}–${hhmm(w.end)} · ${w.score}/100 · ${convertText(w.reasons[0] ?? "")}`, () => choose(w))),
-    ),
+    ...options.map((w) => {
+      const b = button("", () => choose(w));
+      b.setAttribute("aria-pressed", String(w === state.chosen));
+      b.append(
+        el("span", "alt-time", `${hhmm(w.start)}–${hhmm(w.end)}`),
+        el("span", "alt-reason", convertText(w.reasons[0] ?? "")),
+        el("span", "alt-score", String(w.score)),
+      );
+      return el("li", null, b);
+    }),
   );
 }
 
@@ -287,22 +396,6 @@ $("#ics-btn").addEventListener("click", () => {
 });
 
 // ---------- places (spec 002: R8–R10) ----------
-
-function elapsedTimer(el) {
-  const started = Date.now();
-  el.textContent = "0s";
-  return setInterval(() => (el.textContent = `${Math.round((Date.now() - started) / 1000)}s`), 1000);
-}
-
-async function postJson(url, body) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(res.status);
-  return res.json();
-}
 
 // Real places first; the single activity is the fallback (R10.1). One model call either way.
 async function requestActivity(w) {
@@ -358,11 +451,16 @@ function renderPlaces(places) {
   $("#places-attribution").hidden = false;
   $("#places-list").replaceChildren(
     ...places.map((p) => {
-      const row = $("#place-row").content.firstElementChild.cloneNode(true);
+      const row = $("#place-row-tpl").content.firstElementChild.cloneNode(true);
       row.dataset.id = p.id;
+      row.dataset.cat = p.category;
+      row.querySelector(".place-icon").replaceChildren(icon(CATEGORY_ICON[p.category] ?? "i-pin"));
       row.querySelector(".place-name").textContent = p.name;
-      row.querySelector(".place-meta").textContent = `${p.kind.replace(/_/g, " ")} · ${p.walk_min} min walk`;
-      row.querySelector(".place-map").href = p.osm_url;
+      row.querySelector(".place-kind").textContent = p.kind.replace(/_/g, " ");
+      row.querySelector(".place-walk").textContent = `${p.walk_min} min walk`;
+      const map = row.querySelector(".place-map");
+      map.href = p.osm_url;
+      map.setAttribute("aria-label", `${p.name} on OpenStreetMap`);
       return row;
     }),
   );
@@ -383,31 +481,22 @@ async function requestSuggestion(w, token = ++state.suggestToken) {
   $("#suggestion").hidden = false;
   $("#suggest-loading").hidden = false;
   $("#suggest-body").hidden = true;
-
-  const started = Date.now();
-  const elapsed = $("#suggest-elapsed");
-  elapsed.textContent = "0s";
-  const timer = setInterval(() => (elapsed.textContent = `${Math.round((Date.now() - started) / 1000)}s`), 1000);
+  const timer = elapsedTimer($("#suggest-elapsed"));
 
   try {
-    const res = await fetch("/api/suggest", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ window: w, place_name: state.loc.name }),
-    });
-    if (!res.ok) throw new Error(res.status);
-    const s = await res.json();
-    if (token !== state.suggestToken) return; // user picked another window meanwhile
+    const s = await postJson("/api/suggest", { window: w, place_name: state.loc.name });
+    if (token !== state.suggestToken) return;
     state.suggestion = s;
     renderSuggestion(s);
   } catch {
     if (token !== state.suggestToken) return;
-    $("#suggest-loading").hidden = true;
-    $("#suggest-body").hidden = false;
-    $("#suggest-title").textContent = "Couldn't get a suggestion. Just go for a walk!";
-    $("#suggest-steps").replaceChildren();
-    $("#suggest-notice").textContent = "Whatever catches your eye.";
-    $("#suggest-bring-wrap").hidden = true;
+    renderSuggestion({
+      title: "Couldn't get a suggestion. Just go for a walk!",
+      steps: [],
+      what_to_notice: "Whatever catches your eye.",
+      bring: [],
+      source: "fallback",
+    });
   } finally {
     clearInterval(timer);
   }
@@ -418,30 +507,10 @@ function renderSuggestion(s) {
   $("#suggest-body").hidden = false;
   $("#suggest-source").hidden = s.source !== "fallback";
   $("#suggest-title").textContent = s.title;
-  $("#suggest-steps").replaceChildren(...s.steps.map((step) => li(text(step))));
+  $("#suggest-steps").replaceChildren(...s.steps.map((step) => el("li", null, step)));
   $("#suggest-notice").textContent = s.what_to_notice;
   $("#suggest-bring-wrap").hidden = !s.bring.length;
   $("#suggest-bring").textContent = s.bring.join(", ");
-}
-
-// ---------- tiny DOM helpers ----------
-
-function li(child) {
-  const el = document.createElement("li");
-  el.append(child);
-  return el;
-}
-
-function text(s) {
-  return document.createTextNode(s);
-}
-
-function button(label, onClick) {
-  const el = document.createElement("button");
-  el.type = "button";
-  el.textContent = label;
-  el.addEventListener("click", onClick);
-  return el;
 }
 
 renderUnitButton();

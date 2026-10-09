@@ -29,6 +29,7 @@ infrastructure we control, using only open data.
 - R1.2 IF geolocation is denied or unavailable, THEN the system SHALL let the user enter a city name and
   resolve it to coordinates.
 - R1.3 The system SHALL NOT store the user's location on the server beyond the lifetime of a request.
+  *(Amended by spec 002 R10.3: public place data may be cached in memory per ~1 km grid cell for ≤ 6 h.)*
 
 ### R2 — Free time
 *As a user, I want to tell the app when I'm free, so suggestions fit my day.*
@@ -77,7 +78,7 @@ infrastructure we control, using only open data.
 ## 5. Non-functional requirements
 
 - N1 **Latency:** window shown ≤ 2 s after submit; AI suggestion ≤ 45 s on Render CPU (with progress shown).
-- N2 **Privacy:** no accounts, no analytics, no persistence of location or schedule.
+- N2 **Privacy:** no accounts, no analytics, no persistence of location or schedule (see R1.3 amendment).
 - N3 **Mobile-first:** usable at 360 px width; page weight < 200 KB excluding fonts.
 - N4 **Cost:** total Render spend fits inside the $50 credit through judging (~2026-10-19).
 - N5 **Quality:** `pytest` and `ruff` pass in CI on every push.
@@ -109,3 +110,4 @@ Resolved with the proposed defaults on 2026-10-08. Override any of them during r
 
 - 2026-10-07 — Initial draft.
 - 2026-10-08 — Resolved open questions with defaults; added R3.4.
+- 2026-10-09 — R1.3 / N2 amended for spec 002's in-memory place cache (decision 3, approved).

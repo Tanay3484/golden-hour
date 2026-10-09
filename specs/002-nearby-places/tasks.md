@@ -40,7 +40,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
   *Done when:* the Playwright run passes at 360 px in light and dark (Pune via geolocation, Berlin via
   search, Overpass blocked → fallback card); no console errors; page still < 200 KB.
 
-- [ ] **T21 @ai: Docs + spec updates** (R10.3 amendment)
+- [x] **T21 @ai: Docs + spec updates** (R10.3 amendment)
   Amend 001 R1.3 / N2 for the place cache if decision 3 is approved; README "How it works"; update the
   post draft's "How I Built It".
   *Done when:* specs, README and draft agree with the code.

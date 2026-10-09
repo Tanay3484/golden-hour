@@ -1,6 +1,6 @@
 # 003 — Visual redesign: Design
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-10)
 - **Implements:** [requirements.md](requirements.md)
 
 ## Screens (prototype, local, real data)

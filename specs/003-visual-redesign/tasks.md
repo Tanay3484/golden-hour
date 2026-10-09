@@ -1,9 +1,9 @@
 # 003 — Visual redesign: Tasks
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-10)
 - **Implements:** [design.md](design.md)
 
-- [ ] **T24 @ai: Redesign** (V1–V5, V7)
+- [x] **T24 @ai: Redesign** (V1–V5, V7)
   New `index.html`, `style.css`, `app.js` per design. *Prototype exists on `spike-003-redesign`; on
   approval it becomes the implementation.*
   *Done when:* screenshots at 1440 px (light) and 390 px (dark) match the design; page < 200 KB.

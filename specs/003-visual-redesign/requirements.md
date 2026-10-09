@@ -1,6 +1,6 @@
 # 003 — Visual redesign: Requirements
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-10)
 - **Owner:** @Tanay3484
 - **Why now:** the owner's review on 2026-10-10: the UI "looks like a quick 30-minute project". The judges'
   first impression is the live page.

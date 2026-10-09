@@ -16,6 +16,11 @@ choose(window) ─┬─▶ POST /api/places   {lat, lon, window, hobbies}      
                 │               POST /api/places/describe {window, places, hobbies}
                 │               ◀─ {lines: {place_id: "…"}, source}      (Gemma, template per miss)
                 │
+                ├─ OSM unreachable from the server ─▶ response carries {query, urls}  (R10.5)
+                │     browser POSTs the query to Overpass itself (≤ 25 s)
+                │     ─▶ POST /api/places/from-osm {lat, lon, window, hobbies, elements}
+                │     ◀─ {places: [5]}   parsed + ranked server-side, never cached
+                │
                 └─ places < 3 or error ─▶ POST /api/suggest   (001 behaviour, R10.1)
 ```
 
@@ -168,6 +173,22 @@ are never put in the prompt, so the model still doesn't see the user's location 
 |---|---|---|---|---|
 | POST | `/api/places` | `PlacesRequest` | `PlacesResponse` (never errors because of OSM: returns `places: []`) | R8, R10 |
 | POST | `/api/places/describe` | `DescribeRequest` | `PlaceLines` (never fails) | R9 |
+| POST | `/api/places/from-osm` | `PlacesFromOsmRequest` (`PlacesRequest` + raw `elements`, ≤ 2,000) | `PlacesResponse` | R10.5 |
+
+### 4.5a Browser fallback (R10.5)
+
+- `OverpassClient.nearby` returns `None` when no instance answered, and `[]` when one answered with no
+  matches. Only `None` triggers the fallback; an empty answer from OSM wouldn't be any different from
+  the browser.
+- `PlacesResponse` gains `fallback: {query, urls} | None`, set only when OSM was unreachable. `query` is
+  the exact cell-centre query (R10.2), so the browser never sends a more precise location than the
+  server would.
+- The browser tries `urls` in order with a 25 s budget, then posts `elements` to `/api/places/from-osm`.
+  The server treats them as untrusted input: validated as a list of dicts (≤ 2,000), parsed with the
+  same `parse_elements` (names trimmed, unknown tags ignored), filtered by walking distance, ranked,
+  and **not cached**, so one visitor can't plant fake places for everyone else in their cell.
+- The browser can't set a User-Agent. It sends `Origin`/`Referer` (the app's URL), which the Overpass
+  usage policy accepts for identifying an app.
 
 ### 4.6 Frontend
 
@@ -205,6 +226,7 @@ are never put in the prompt, so the model still doesn't see the user's location 
 
 ## Changelog
 
+- 2026-10-10 — §4.5a: browser fallback for Overpass (R10.5), after Render's shared IP was rate-limited.
 - 2026-10-09 — T18 results (3 runs × Pune/Berlin each): after the name and borrowed-fact checks,
   gemma3:1b put every line on the right place and stopped borrowing other places' facts, but still adds
   plausible generic detail ("the water's surface" at a park, "a pastry" at a café). gemma3:4b stayed

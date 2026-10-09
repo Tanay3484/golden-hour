@@ -79,7 +79,12 @@ Measured before writing this spec; details in [design.md §2](design.md#2-spike-
   for at most 6 hours. The cache holds only public place data, is never written to disk or logs, and is
   cleared on restart. *(This amends R1.3 / N2; see decision 3 below.)*
 - R10.4 The privacy note on the page SHALL say that an approximate (~1 km) location is sent to
-  OpenStreetMap to find places.
+  OpenStreetMap to find places, and that this may come from the visitor's browser (R10.5).
+- R10.5 IF the server cannot reach any Overpass instance, THEN the browser SHALL send the same
+  cell-centre query (R10.2) to Overpass directly and pass the raw results to the server, which parses
+  and ranks them as usual. Results supplied by a browser SHALL NOT be cached or shown to anyone else.
+  The total wait for places stays ≤ 25 s on the server plus ≤ 25 s in the browser before the R10.1
+  fallback.
 
 ## 5. Non-functional
 
@@ -111,6 +116,10 @@ Measured before writing this spec; details in [design.md §2](design.md#2-spike-
 
 ## Changelog
 
+- 2026-10-10 — R10.5 added. Live on Render, every Overpass call failed (12 tries over 6 min) while the
+  same query from a home connection returned 44 places in 3 s: Overpass rate-limits per IP, and Render's
+  outbound IP is shared. A browser on another origin can query Overpass directly (CORS allowed; checked in
+  Edge: 200, 44 places, 3.5 s), so each visitor's own IP becomes the fallback.
 - 2026-10-09 — R10.2: query from the ~1 km cell centre (2 decimals) instead of 3-decimal coordinates, so
   cached results serve everyone in the cell and OSM sees a coarser location.
 - 2026-10-09 — Initial draft, informed by the Overpass and Gemma spike.

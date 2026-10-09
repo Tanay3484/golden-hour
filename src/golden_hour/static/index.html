@@ -39,6 +39,8 @@
       <p class="muted small">Leave this empty if you're free until sunset.</p>
       <ul id="ranges" class="ranges"></ul>
       <button id="add-range" class="secondary" type="button">+ Add free time</button>
+      <h3>What do you enjoy? <span class="muted small">Up to 3, optional</span></h3>
+      <div id="hobbies" class="chips" role="group" aria-label="Hobbies"></div>
       <button id="plan-btn" class="primary" type="button">Find my golden hour</button>
       <p id="plan-error" class="error" role="alert" hidden></p>
     </section>
@@ -61,8 +63,17 @@
       </div>
     </section>
 
-    <!-- R4: suggestion -->
+    <!-- Spec 002: real places nearby -->
+    <section id="places" class="card" hidden aria-live="polite">
+      <p class="eyebrow">Top 5 near you</p>
+      <p id="places-loading"><span class="spinner" aria-hidden="true"></span> Looking for places near you… <span id="places-elapsed">0s</span></p>
+      <ol id="places-list" class="places"></ol>
+      <p id="places-attribution" class="muted small" hidden>Places © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> · lines by Gemma</p>
+    </section>
+
+    <!-- R4: suggestion (also the fallback when no places are found) -->
     <section id="suggestion" class="card" hidden aria-live="polite">
+      <p id="suggest-note" class="muted small" hidden>Couldn't find places nearby right now, so here's an idea instead.</p>
       <div id="suggest-loading">
         <p><span class="spinner" aria-hidden="true"></span> Gemma is thinking of something to do… <span id="suggest-elapsed">0s</span></p>
         <p class="muted small">It's an open-weight model running on our own server, not a big cloud API, so it can take up to half a minute.</p>
@@ -81,8 +92,16 @@
     <p>Suggestions by <a href="https://ai.google.dev/gemma">Gemma</a> (open weights) via <a href="https://ollama.com">Ollama</a> ·
       Weather by <a href="https://open-meteo.com">Open-Meteo</a> ·
       <a href="https://github.com/Tanay3484/golden-hour">Source</a> (MIT)</p>
-    <p class="small">No accounts, no tracking. Your location is used for one forecast lookup and never stored.</p>
+    <p class="small">No accounts, no tracking. Your location is used for a forecast lookup and, as an approximate (~1 km) area, to find nearby places on OpenStreetMap. It's never stored.</p>
   </footer>
+
+  <template id="place-row">
+    <li class="place">
+      <p class="place-name"></p>
+      <p class="muted small"><span class="place-meta"></span> · <a class="place-map" target="_blank" rel="noopener">Map ↗</a></p>
+      <p class="place-line loading"></p>
+    </li>
+  </template>
 
   <template id="range-row">
     <li class="range">

@@ -6,9 +6,10 @@
 > Your best 20–40 minutes outside today, and one small thing to do with them.
 
 Tell Golden Hour when you're free. It checks the hourly forecast and sunset for where you are, picks the
-nicest window to be outside, and asks an open-weight model ([Gemma](https://ai.google.dev/gemma), served by
-[Ollama](https://ollama.com)) for one specific, walking-distance thing to do. You get a countdown and a
-calendar invite with a 10-minute reminder.
+nicest window to be outside, and finds the **top 5 real places within walking distance** that suit your
+hobbies, from [OpenStreetMap](https://www.openstreetmap.org). An open-weight model
+([Gemma](https://ai.google.dev/gemma), served by [Ollama](https://ollama.com)) writes one line for each on
+what to do there right now. You get a countdown and a calendar invite with a 10-minute reminder.
 
 Built for the DEV [Hacktoberfest 2026 Open-Source AI Challenge, Week 1: "Touch Grass"](https://dev.to/challenges/hacktoberfest-week1-2026-10-05).
 
@@ -20,16 +21,24 @@ Browser ──▶ FastAPI ──▶ Open-Meteo (forecast + sunset, open data, no
                 ├─ scoring.py   deterministic: every 20–40 min slot in your free time, scored 0–100
                 │               (rain, temperature, wind, UV, +15 for golden hour)
                 │
-                └─ Ollama ──▶ Gemma writes ONE activity for the chosen slot (JSON-schema output)
-                              └─ curated fallback if the model is slow, down, or returns junk
+                ├─ places.py ──▶ OpenStreetMap (Overpass): named parks, views, water, art, history…
+                │   ranking.py   top 5 by your hobbies, walking time, weather and variety
+                │
+                └─ Ollama ──▶ Gemma writes one line per place, using only OSM facts (JSON-schema output)
+                              └─ template lines if the model is slow, down, or puts a line on the wrong place
+                              └─ no places found? one Gemma-written activity instead, with a curated fallback
 ```
 
 - **Picking the time is plain, tested Python**, so it's fast, explainable and always works.
 - **The model only does the creative part**: turning "18:00–18:40, 14 °C, 45% rain, golden hour" into
   something worth getting up for. Its output is constrained to a JSON schema and validated; if anything
   goes wrong you still get a hand-written activity.
-- **Privacy:** no accounts, no analytics. Coordinates are used for one forecast lookup and never logged or
-  stored; the model never sees them.
+- **Code ranks, the model describes.** In testing, small models asked to "pick the best 5" just picked the
+  first five, and invented details about real places. So plain code picks, and each line is checked
+  against the place it belongs to.
+- **Privacy:** no accounts, no analytics. Precise coordinates are used for the forecast and walking times
+  and never logged or stored. OpenStreetMap only sees the centre of your ~1 km area; nearby-place results
+  are cached in memory per area for up to 6 hours. The model never sees coordinates.
 
 ## Why open models
 

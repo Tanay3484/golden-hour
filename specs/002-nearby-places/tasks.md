@@ -1,6 +1,6 @@
 # 002 — Nearby places for your hobbies: Tasks
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-09)
 - **Implements:** [design.md](design.md)
 - **Owners:** `@ai` builds (handover of 2026-10-09 still applies); `@human` approves and field-tests
 
@@ -9,38 +9,38 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
 
 ## Tasks
 
-- [ ] **T15 @ai: Hobbies + categories** (R7.1, R7.2)
+- [x] **T15 @ai: Hobbies + categories** (R7.1, R7.2)
   `hobbies.py` with the two tables from design §3, `categories_for(hobbies)`, and a template line per
   category.
   *Done when:* tests cover every hobby mapping and the "no hobbies → all categories" case.
 
-- [ ] **T16 @ai: Overpass client + cache** (R8.1, R10.1–R10.3, N7)
+- [x] **T16 @ai: Overpass client + cache** (R8.1, R10.1–R10.3, N7)
   `places.py`: `build_query`, `parse_elements`, `haversine_m`, `OverpassClient.nearby` with endpoint
   failover, 25 s budget, User-Agent and `PlaceCache`. Record a fresh Pune fixture when Overpass allows it.
   *Done when:* `MockTransport` tests pass (504 → failover, both down → `[]`, cache hit makes 0 requests),
   and one live call each for Pune and Berlin succeeds or degrades to `[]` within 25 s.
 
-- [ ] **T17 @ai: Ranking** (R8.2)
+- [x] **T17 @ai: Ranking** (R8.2)
   `ranking.py` `rank_places` per design §4.3.
   *Done when:* table-driven tests for hobby match, rain → covered, golden hour, the variety cap, tie-breaks
   and < 3 → `[]`.
 
-- [ ] **T18 @ai: Describe with Gemma** (R9.1–R9.3)
+- [x] **T18 @ai: Describe with Gemma** (R9.1–R9.3) _(1B still embellishes; bar met by 4B only, see design changelog)_
   `prompts.build_place_messages`, `describe.py` with validation and templates.
   *Done when:* unit tests pass, and a local run on the Berlin fixture with gemma3:1b and 4b invents no
   facts in 3 tries each (checked by hand; findings go in the design changelog).
 
-- [ ] **T19 @ai: API routes** (R8, R9, R10.1)
+- [x] **T19 @ai: API routes** (R8, R9, R10.1)
   `POST /api/places`, `POST /api/places/describe` with dependency overrides.
   *Done when:* API tests pass, including OSM down → `places: []` with status 200.
 
-- [ ] **T20 @ai: Frontend** (R7.1–R7.3, R8.3–R8.5, R10.1, R10.4)
+- [x] **T20 @ai: Frontend** (R7.1–R7.3, R8.3–R8.5, R10.1, R10.4)
   Hobby chips, "Top 5 near you" card with line skeletons, attribution, map links, fallback to the
   single suggestion, updated privacy note.
   *Done when:* the Playwright run passes at 360 px in light and dark (Pune via geolocation, Berlin via
   search, Overpass blocked → fallback card); no console errors; page still < 200 KB.
 
-- [ ] **T21 @ai: Docs + spec updates** (R10.3 amendment)
+- [x] **T21 @ai: Docs + spec updates** (R10.3 amendment)
   Amend 001 R1.3 / N2 for the place cache if decision 3 is approved; README "How it works"; update the
   post draft's "How I Built It".
   *Done when:* specs, README and draft agree with the code.

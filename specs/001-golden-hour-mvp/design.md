@@ -171,7 +171,8 @@ Baseline rules. You can tune the numbers, but update this section when you do:
   - +15 if the window overlaps `[sunset − 60 min, sunset]` (golden hour)
   - clamp to 0–100 and round. `reasons` = the largest-magnitude factors as short phrases, e.g.
     `"dry (5% rain)"`, `"golden hour"`, `"breezy (28 km/h)"`.
-- **`pick_windows`:** sort by score (desc), then by start (asc); greedily take non-overlapping windows; return
+- **`pick_windows`:** sort by score (desc), then golden-hour windows first (the +15 bonus can be
+  lost to the 100 cap on a perfect day), then by start (asc); greedily take non-overlapping windows; return
   up to `k`.
 - **`plan_day`:**
   - Empty `free` means `[now, sunset]` (R2.2).
@@ -258,4 +259,5 @@ downloadIcs(icsString, filename)       // Blob + temporary <a download>
 ## Changelog
 
 - 2026-10-08 — Initial draft.
+- 2026-10-09 — T3: `pick_windows` tie-break prefers golden hour before earlier start.
 - 2026-10-08 — T1: added `Place` and `PlanRequest` to §4.1 (they were implied by §4.4).

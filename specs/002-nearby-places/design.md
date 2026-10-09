@@ -205,6 +205,16 @@ are never put in the prompt, so the model still doesn't see the user's location 
 
 ## Changelog
 
+- 2026-10-09 — T18 results (3 runs × Pune/Berlin each): after the name and borrowed-fact checks,
+  gemma3:1b put every line on the right place and stopped borrowing other places' facts, but still adds
+  plausible generic detail ("the water's surface" at a park, "a pastry" at a café). gemma3:4b stayed
+  grounded and used real facts well (inscriptions, the library's padlock note), but took 18–40 s on a
+  laptop, i.e. minutes on Render's 1 CPU. **Production stays on 1B; T18's "invents no facts" bar is met
+  by 4B only.** Accepted for the MVP of 002; revisit with a bigger Render plan or on-device inference.
+- 2026-10-09 — T18: with gemma3:1b, 2 of 3 Pune runs attached lines to the wrong place (a park's line
+  described a statue elsewhere on the list). The schema now makes the model echo each place's `name`;
+  a line is rejected (→ template) if the echoed name doesn't match its id or the line mentions another
+  listed place, or uses a fact belonging to another listed place. Temperature lowered to 0.3.
 - 2026-10-09 — T17: dropped `sports_centre` from `sport`; in real Berlin data it surfaced a paid
   axe-throwing venue. Pitches, tracks and outdoor fitness stations are free to use.
 - 2026-10-09 — T16: Overpass rejected the default 512 MiB `maxsize` with fast 504s on a busy server;

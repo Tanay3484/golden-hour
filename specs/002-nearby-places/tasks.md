@@ -25,7 +25,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
   *Done when:* table-driven tests for hobby match, rain → covered, golden hour, the variety cap, tie-breaks
   and < 3 → `[]`.
 
-- [ ] **T18 @ai: Describe with Gemma** (R9.1–R9.3)
+- [x] **T18 @ai: Describe with Gemma** (R9.1–R9.3) _(1B still embellishes; bar met by 4B only, see design changelog)_
   `prompts.build_place_messages`, `describe.py` with validation and templates.
   *Done when:* unit tests pass, and a local run on the Berlin fixture with gemma3:1b and 4b invents no
   facts in 3 tries each (checked by hand; findings go in the design changelog).

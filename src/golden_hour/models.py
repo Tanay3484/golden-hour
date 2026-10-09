@@ -123,9 +123,23 @@ class PlacesRequest(BaseModel):
     hobbies: list[Hobby] = Field(default_factory=list, max_length=3)
 
 
+class OsmFallback(BaseModel):
+    """Sent when the server couldn't reach Overpass: the browser may try instead (R10.5)."""
+
+    query: str
+    urls: list[str]
+
+
 class PlacesResponse(BaseModel):
     places: list[Spot]
     attribution: str = "Places © OpenStreetMap contributors"
+    fallback: OsmFallback | None = None
+
+
+class PlacesFromOsmRequest(PlacesRequest):
+    """Raw Overpass elements fetched by the browser. Untrusted; never cached (R10.5)."""
+
+    elements: list[dict] = Field(max_length=2000)
 
 
 class DescribeRequest(BaseModel):

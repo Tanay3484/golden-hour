@@ -175,7 +175,7 @@
             <span class="pill"><svg class="icon"><use href="#i-sparkle"/></svg> Lines by Gemma</span>
           </div>
           <div id="places-loading" class="skeletons">
-            <p class="muted small"><span class="spinner" aria-hidden="true"></span> Looking for places near you… <span id="places-elapsed">0s</span></p>
+            <p class="muted small"><span class="spinner" aria-hidden="true"></span> <span id="places-status">Looking for places near you…</span> <span id="places-elapsed">0s</span></p>
             <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
           </div>
           <ol id="places-list" class="places"></ol>
@@ -211,7 +211,7 @@
   <footer class="footer">
     <div class="footer-inner">
       <p>Built for the DEV Hacktoberfest 2026 “Touch Grass” challenge. Suggestions by <a href="https://ai.google.dev/gemma">Gemma</a> via <a href="https://ollama.com">Ollama</a> · Weather by <a href="https://open-meteo.com">Open-Meteo</a> · Places by <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://github.com/Tanay3484/golden-hour">Source (MIT)</a></p>
-      <p>No accounts, no tracking. Your location is used for a forecast lookup and, as an approximate (~1 km) area, to find nearby places on OpenStreetMap. It's never stored.</p>
+      <p>No accounts, no tracking. Your location is used for a forecast lookup and, as an approximate (~1 km) area, to find nearby places on OpenStreetMap (from our server, or from your browser if our server can't reach it). It's never stored.</p>
     </div>
   </footer>
 

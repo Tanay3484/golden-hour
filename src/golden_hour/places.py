@@ -28,6 +28,11 @@ USER_AGENT = f"golden-hour/{__version__} (+https://github.com/Tanay3484/golden-h
 FACT_TAGS = ("description", "inscription", "artist_name", "artwork_type", "memorial", "sport")
 
 
+def query_for(lat: float, lon: float, categories: list[str]) -> str:
+    """The exact query the server would send: cell centre only (R10.2), for the browser (R10.5)."""
+    return build_query(*cell_of(lat, lon), categories)
+
+
 def radius_for(duration_min: int) -> int:
     """Walking radius for a window: a third of it each way (R8.1)."""
     return round(duration_min / 3 * WALK_M_PER_MIN)
@@ -64,12 +69,22 @@ def _facts(tags: dict) -> list[str]:
     facts = []
     for key in FACT_TAGS:
         value = tags.get(key)
-        if value:
+        if isinstance(value, str) and value.strip():
             value = value.strip()
             if len(value) > 100:
                 value = value[:99].rstrip() + "…"
             facts.append(f"{key.replace('_', ' ')}: {value}")
     return facts[:3]
+
+
+OSM_TYPES = {"node", "way", "relation"}
+MAX_NAME = 120
+
+
+def _is_coord(value: object, limit: float) -> bool:
+    return (
+        isinstance(value, int | float) and not isinstance(value, bool) and -limit <= value <= limit
+    )
 
 
 def _name_key(name: str) -> str:
@@ -81,10 +96,20 @@ def parse_elements(elements: list[dict], categories: list[str]) -> list[Spot]:
     """Named, classifiable places with coordinates, deduplicated by (name, category)."""
     spots: dict[tuple[str, str], Spot] = {}
     for e in elements:
-        tags = e.get("tags") or {}
-        name = (tags.get("name:en") or tags.get("name") or "").strip()
-        point = e.get("center") or e
-        if not name or "lat" not in point or "lon" not in point:
+        # Elements may come from a browser (R10.5): treat every field as untrusted.
+        if (
+            not isinstance(e, dict)
+            or e.get("type") not in OSM_TYPES
+            or not isinstance(e.get("id"), int)
+        ):
+            continue
+        tags = e.get("tags")
+        if not isinstance(tags, dict):
+            continue
+        name = str(tags.get("name:en") or tags.get("name") or "").strip()[:MAX_NAME]
+        point = e.get("center") if isinstance(e.get("center"), dict) else e
+        lat, lon = point.get("lat"), point.get("lon")
+        if not name or not _is_coord(lat, 90) or not _is_coord(lon, 180):
             continue
         found = classify(tags, categories)
         if not found:
@@ -97,8 +122,8 @@ def parse_elements(elements: list[dict], categories: list[str]) -> list[Spot]:
                 name=name,
                 category=category,
                 kind=kind,
-                lat=point["lat"],
-                lon=point["lon"],
+                lat=lat,
+                lon=lon,
                 covered=CATEGORIES[category].covered,
                 facts=_facts(tags),
                 osm_url=f"https://www.openstreetmap.org/{e['type']}/{e['id']}",
@@ -156,18 +181,26 @@ class OverpassClient:
         self._http = http or httpx.Client(headers={"User-Agent": USER_AGENT})
         self.cache = cache or PlaceCache()
 
-    def nearby(self, lat: float, lon: float, radius_m: int, categories: list[str]) -> list[Spot]:
-        """Places within `radius_m` walk of (lat, lon). Returns [] if OSM can't be reached."""
+    def nearby(
+        self, lat: float, lon: float, radius_m: int, categories: list[str]
+    ) -> list[Spot] | None:
+        """Places within `radius_m` walk of (lat, lon).
+
+        Returns None if no Overpass instance answered (the browser can then try, R10.5),
+        and [] if one answered with nothing nearby.
+        """
         cell = cell_of(lat, lon)
         key = (*cell, tuple(sorted(categories)))
         spots = self.cache.get(key)
         if spots is None:
             spots = self._fetch(*cell, categories)
+            if spots is None:
+                return None
             if spots:
                 self.cache.put(key, spots)
         return within_walk(spots, lat, lon, radius_m)
 
-    def _fetch(self, cell_lat: float, cell_lon: float, categories: list[str]) -> list[Spot]:
+    def _fetch(self, cell_lat: float, cell_lon: float, categories: list[str]) -> list[Spot] | None:
         query = build_query(cell_lat, cell_lon, categories)
         deadline = self.clock() + self.budget_s
         for url in self.urls:
@@ -181,4 +214,4 @@ class OverpassClient:
             except (httpx.HTTPError, ValueError) as e:
                 # Host and error only: never the query, which contains the (coarse) location.
                 log.warning("overpass %s failed: %s", httpx.URL(url).host, type(e).__name__)
-        return []
+        return None

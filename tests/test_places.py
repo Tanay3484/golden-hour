@@ -15,6 +15,7 @@ from golden_hour.places import (
     cell_of,
     haversine_m,
     parse_elements,
+    query_for,
     radius_for,
     within_walk,
 )
@@ -171,8 +172,9 @@ def test_failover_to_second_endpoint_and_privacy_of_query():
     assert seen[1].headers["User-Agent"].startswith("golden-hour/")
 
 
-def test_all_endpoints_down_returns_empty():
-    assert client(lambda r: httpx.Response(500)).nearby(*PUNE, 1000, ["park"]) == []
+def test_all_endpoints_down_returns_none_not_empty():
+    # None means "unreachable", so the browser can try (R10.5); [] means OSM found nothing.
+    assert client(lambda r: httpx.Response(500)).nearby(*PUNE, 1000, ["park"]) is None
 
 
 def test_budget_stops_trying_more_endpoints():
@@ -184,7 +186,7 @@ def test_budget_stops_trying_more_endpoints():
         t[0] += 24  # first attempt eats almost the whole budget
         return httpx.Response(504)
 
-    assert client(handler, clock=lambda: t[0]).nearby(*PUNE, 1000, ["park"]) == []
+    assert client(handler, clock=lambda: t[0]).nearby(*PUNE, 1000, ["park"]) is None
     assert calls == ["a.example"]
 
 
@@ -200,6 +202,11 @@ def test_cache_hit_makes_no_request_and_recomputes_walk_per_user():
     second = c.nearby(18.5230, 73.8590, 1000, ["park"])  # same cell, different user
     assert len(calls) == 1
     assert first[0].walk_min != second[0].walk_min
+
+
+def test_empty_answer_is_empty_list():
+    c = client(lambda r: httpx.Response(200, json={"elements": []}))
+    assert c.nearby(*PUNE, 1000, ["park"]) == []
 
 
 def test_empty_results_are_not_cached():
@@ -224,3 +231,36 @@ def test_cache_expires_and_evicts():
     assert cache.get("a") is None  # evicted (oldest)
     now[0] = 11
     assert cache.get("c") is None  # expired
+
+
+@pytest.mark.parametrize(
+    "junk",
+    [
+        "not a dict",
+        {"type": "node", "id": "7", "lat": 1, "lon": 1, "tags": {"name": "X", "leisure": "park"}},
+        {"type": "bogus", "id": 7, "lat": 1, "lon": 1, "tags": {"name": "X", "leisure": "park"}},
+        {"type": "node", "id": 7, "lat": 999, "lon": 1, "tags": {"name": "X", "leisure": "park"}},
+        {"type": "node", "id": 7, "lat": True, "lon": 1, "tags": {"name": "X", "leisure": "park"}},
+        {"type": "node", "id": 7, "lat": 1, "lon": 1, "tags": ["name", "X"]},
+        {"type": "way", "id": 7, "center": "x", "tags": {"name": "X", "leisure": "park"}},
+    ],
+)
+def test_parse_ignores_untrusted_junk(junk):
+    assert parse_elements([junk], ["park"]) == []
+
+
+def test_parse_caps_names_and_ignores_non_string_facts():
+    el = {
+        "type": "node",
+        "id": 8,
+        "lat": 1,
+        "lon": 1,
+        "tags": {"name": "N" * 500, "leisure": "park", "description": 42},
+    }
+    (spot,) = parse_elements([el], ["park"])
+    assert len(spot.name) == 120 and spot.facts == []
+
+
+def test_query_for_uses_cell_centre():
+    q = query_for(18.5204, 73.8567, ["park"])
+    assert "18.52,73.86" in q and "18.5204" not in q

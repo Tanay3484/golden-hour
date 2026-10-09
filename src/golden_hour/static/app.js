@@ -406,19 +406,22 @@ async function requestActivity(w) {
   $("#suggest-note").hidden = true;
   $("#places").hidden = false;
   $("#places-loading").hidden = false;
+  $("#places-status").textContent = "Looking for places near you…";
   $("#places-list").replaceChildren();
   $("#places-attribution").hidden = true;
 
   const timer = elapsedTimer($("#places-elapsed"));
+  const request = { lat: state.loc.lat, lon: state.loc.lon, window: w, hobbies: state.hobbies };
   let found = [];
   try {
-    const data = await postJson("/api/places", {
-      lat: state.loc.lat,
-      lon: state.loc.lon,
-      window: w,
-      hobbies: state.hobbies,
-    });
+    const data = await postJson("/api/places", request);
     found = data.places;
+    if (!found.length && data.fallback && token === state.suggestToken) {
+      // The server couldn't reach OpenStreetMap: ask it from this browser instead (R10.5).
+      $("#places-status").textContent = "Asking OpenStreetMap directly…";
+      const elements = await overpassFromBrowser(data.fallback);
+      if (elements) found = (await postJson("/api/places/from-osm", { ...request, elements })).places;
+    }
   } catch {
     found = [];
   } finally {
@@ -444,6 +447,34 @@ async function requestActivity(w) {
     if (token !== state.suggestToken) return;
     renderPlaceLines({});
   }
+}
+
+// Same cell-centre query the server would have sent (R10.2), tried against each instance
+// within 25 s. Returns the raw elements, or null if none answered.
+async function overpassFromBrowser({ query, urls }) {
+  const deadline = Date.now() + 25_000;
+  for (const url of urls) {
+    const remaining = deadline - Date.now();
+    if (remaining < 2000) break;
+    const abort = new AbortController();
+    const timeout = setTimeout(() => abort.abort(), remaining);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `data=${encodeURIComponent(query)}`,
+        signal: abort.signal,
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (Array.isArray(data.elements)) return data.elements.slice(0, 2000);
+    } catch {
+      /* try the next instance */
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+  return null;
 }
 
 function renderPlaces(places) {

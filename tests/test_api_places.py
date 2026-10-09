@@ -103,3 +103,41 @@ def test_describe_route(overpass):
     data = resp.json()
     assert data["lines"]["node/1"] == "Sit by the trees."
     assert data["source"] == {"node/1": "model", "node/2": "template", "node/3": "template"}
+
+
+def test_unreachable_osm_hands_the_query_to_the_browser(overpass):
+    overpass.spots = None
+    data = client.post("/api/places", json=BODY | {"hobbies": ["art"]}).json()
+    assert data["places"] == []
+    fb = data["fallback"]
+    assert fb["urls"] and fb["urls"][0].startswith("https://")
+    assert "18.52,73.86" in fb["query"] and "18.5204" not in fb["query"]
+    assert '"tourism"="artwork"' in fb["query"]
+
+
+def test_no_fallback_when_osm_answered(overpass):
+    assert client.post("/api/places", json=BODY).json()["fallback"] is None
+
+
+def element(i, lat, lon, tags):
+    return {"type": "node", "id": i, "lat": lat, "lon": lon, "tags": tags}
+
+
+def test_from_osm_parses_ranks_and_filters_by_walk(overpass):
+    elements = [
+        element(1, 18.5210, 73.8570, {"name": "Garden", "leisure": "garden"}),
+        element(2, 18.5190, 73.8560, {"name": "Statue", "tourism": "artwork"}),
+        element(3, 18.5215, 73.8580, {"name": "Lookout", "tourism": "viewpoint"}),
+        element(4, 18.6000, 73.9000, {"name": "Too far", "leisure": "park"}),
+        {"junk": True},
+    ]
+    resp = client.post("/api/places/from-osm", json=BODY | {"elements": elements})
+    assert resp.status_code == 200
+    names = [p["name"] for p in resp.json()["places"]]
+    assert set(names) == {"Garden", "Statue", "Lookout"}
+    assert overpass.calls == []  # the server didn't query OSM itself
+
+
+def test_from_osm_rejects_huge_payloads(overpass):
+    big = [element(i, 18.52, 73.85, {"name": f"P{i}", "leisure": "park"}) for i in range(2001)]
+    assert client.post("/api/places/from-osm", json=BODY | {"elements": big}).status_code == 422

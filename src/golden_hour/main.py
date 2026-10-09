@@ -16,8 +16,10 @@ from golden_hour.llm import OllamaClient
 from golden_hour.models import (
     DescribeRequest,
     Forecast,
+    OsmFallback,
     Place,
     PlaceLines,
+    PlacesFromOsmRequest,
     PlacesRequest,
     PlacesResponse,
     Plan,
@@ -26,7 +28,13 @@ from golden_hour.models import (
     SuggestionContext,
     TimeRange,
 )
-from golden_hour.places import OverpassClient, radius_for
+from golden_hour.places import (
+    OverpassClient,
+    parse_elements,
+    query_for,
+    radius_for,
+    within_walk,
+)
 from golden_hour.ranking import rank_places
 from golden_hour.suggest import suggest
 from golden_hour.weather import WeatherClient, WeatherError
@@ -120,9 +128,24 @@ def places(
     req: PlacesRequest, overpass: OverpassClient = Depends(get_overpass)
 ) -> PlacesResponse:
     # Never fails because of OSM: no places means the page falls back to /api/suggest (R10.1).
-    nearby = overpass.nearby(
-        req.lat, req.lon, radius_for(req.window.duration_min), categories_for(req.hobbies)
-    )
+    categories = categories_for(req.hobbies)
+    nearby = overpass.nearby(req.lat, req.lon, radius_for(req.window.duration_min), categories)
+    if nearby is None:  # no Overpass instance answered: let the browser try (R10.5)
+        return PlacesResponse(
+            places=[],
+            fallback=OsmFallback(
+                query=query_for(req.lat, req.lon, categories), urls=settings.overpass_urls
+            ),
+        )
+    return PlacesResponse(places=rank_places(nearby, req.hobbies, req.window))
+
+
+@app.post("/api/places/from-osm", response_model=PlacesResponse)
+def places_from_osm(req: PlacesFromOsmRequest) -> PlacesResponse:
+    # Browser-supplied elements: parsed defensively and never cached, so they can't reach
+    # anyone else (R10.5).
+    spots = parse_elements(req.elements, categories_for(req.hobbies))
+    nearby = within_walk(spots, req.lat, req.lon, radius_for(req.window.duration_min))
     return PlacesResponse(places=rank_places(nearby, req.hobbies, req.window))
 
 

@@ -205,6 +205,9 @@ are never put in the prompt, so the model still doesn't see the user's location 
 
 ## Changelog
 
+- 2026-10-09 — T16: Overpass rejected the default 512 MiB `maxsize` with fast 504s on a busy server;
+  declaring `[maxsize:67108864]` got Pune (3.2 s) and Mumbai (2.9 s) through on the main instance.
+  Dedupe ignores spaces and punctuation in names ("Shaniwarwada" = "Shaniwar Wada").
 - 2026-10-09 — §4.2: query from the cell centre with a fixed ~1.9 km radius and per-category cap 40,
   so one cached response serves the whole cell; distances recomputed per user (R10.2 tightened).
 - 2026-10-09 — Initial draft.

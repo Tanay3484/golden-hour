@@ -14,7 +14,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
   category.
   *Done when:* tests cover every hobby mapping and the "no hobbies → all categories" case.
 
-- [ ] **T16 @ai: Overpass client + cache** (R8.1, R10.1–R10.3, N7)
+- [x] **T16 @ai: Overpass client + cache** (R8.1, R10.1–R10.3, N7)
   `places.py`: `build_query`, `parse_elements`, `haversine_m`, `OverpassClient.nearby` with endpoint
   failover, 25 s budget, User-Agent and `PlaceCache`. Record a fresh Pune fixture when Overpass allows it.
   *Done when:* `MockTransport` tests pass (504 → failover, both down → `[]`, cache hit makes 0 requests),

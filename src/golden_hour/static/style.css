@@ -169,3 +169,42 @@ ol li { margin-bottom: 4px; }
 
 footer { color: var(--muted); font-size: 0.875rem; padding-bottom: 32px; }
 footer a { color: inherit; }
+
+/* Spec 002: hobby chips and places */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.chip { border-radius: 999px; padding: 6px 12px; font-size: 0.9rem; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.places { list-style: none; padding: 0; margin: 8px 0 0; counter-reset: place; }
+.place { counter-increment: place; border-top: 1px solid var(--line); padding: 10px 0 10px 2rem; position: relative; }
+.place:first-child { border-top: none; }
+.place::before {
+  content: counter(place);
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: grid;
+  place-items: center;
+}
+.place p { margin: 0; }
+.place-name { font-weight: 700; overflow-wrap: anywhere; }
+.place-map { color: var(--accent); }
+.place-line { margin-top: 4px !important; }
+.place-line.loading {
+  height: 1.1em;
+  width: 80%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--line), var(--accent-soft), var(--line));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .place-line.loading { animation: none; } }

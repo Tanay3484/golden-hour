@@ -34,7 +34,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
   `POST /api/places`, `POST /api/places/describe` with dependency overrides.
   *Done when:* API tests pass, including OSM down → `places: []` with status 200.
 
-- [ ] **T20 @ai: Frontend** (R7.1–R7.3, R8.3–R8.5, R10.1, R10.4)
+- [x] **T20 @ai: Frontend** (R7.1–R7.3, R8.3–R8.5, R10.1, R10.4)
   Hobby chips, "Top 5 near you" card with line skeletons, attribution, map links, fallback to the
   single suggestion, updated privacy note.
   *Done when:* the Playwright run passes at 360 px in light and dark (Pune via geolocation, Berlin via

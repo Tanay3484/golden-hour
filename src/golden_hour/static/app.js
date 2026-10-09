@@ -2,15 +2,68 @@ import { buildIcs, downloadIcs, startCountdown } from "./time.js";
 
 const $ = (sel) => document.querySelector(sel);
 
+// Must be defined before `state`, which reads saved hobbies on load.
+const HOBBIES = [
+  ["photography", "📷 Photography"],
+  ["nature", "🐦 Nature & birds"],
+  ["history", "🏛️ History"],
+  ["art", "🎨 Art"],
+  ["running", "🏃 Running & walking"],
+  ["reading", "📖 Reading & sketching"],
+  ["coffee", "☕ Coffee outside"],
+  ["sports", "⚽ Sports"],
+];
+const MAX_HOBBIES = 3;
+
 const state = {
   loc: null, // { lat, lon, name }
   plan: null,
   chosen: null,
   suggestion: null,
+  places: null, // { places: [...], lines: {id: line} } when the places card is showing
   stopCountdown: null,
   suggestToken: 0,
   unit: loadUnit(),
+  hobbies: loadHobbies(),
 };
+
+// ---------- hobbies (R7) ----------
+
+function loadHobbies() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("gh-hobbies") || "[]");
+    const known = new Set(HOBBIES.map(([id]) => id));
+    return Array.isArray(saved) ? saved.filter((h) => known.has(h)).slice(0, MAX_HOBBIES) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHobbies() {
+  try {
+    localStorage.setItem("gh-hobbies", JSON.stringify(state.hobbies));
+  } catch {
+    /* storage unavailable: keep in memory only */
+  }
+}
+
+function renderHobbies() {
+  const full = state.hobbies.length >= MAX_HOBBIES;
+  $("#hobbies").replaceChildren(
+    ...HOBBIES.map(([id, label]) => {
+      const on = state.hobbies.includes(id);
+      const el = button(label, () => {
+        state.hobbies = on ? state.hobbies.filter((h) => h !== id) : [...state.hobbies, id];
+        saveHobbies();
+        renderHobbies();
+      });
+      el.className = "chip";
+      el.setAttribute("aria-pressed", String(on));
+      el.disabled = full && !on;
+      return el;
+    }),
+  );
+}
 
 // ---------- units (R3.4) ----------
 
@@ -204,7 +257,7 @@ function choose(w) {
   renderAlternates();
   state.stopCountdown?.();
   state.stopCountdown = startCountdown($("#countdown"), w.start, w.end, state.plan.timezone);
-  requestSuggestion(w);
+  requestActivity(w);
 }
 
 // ---------- calendar (R5.1) ----------
@@ -212,11 +265,19 @@ function choose(w) {
 $("#ics-btn").addEventListener("click", () => {
   const w = state.chosen;
   const s = state.suggestion;
-  const description = s
-    ? [s.title, ...s.steps.map((step, i) => `${i + 1}. ${step}`), `Notice: ${s.what_to_notice}`].join("\n")
-    : "Go outside for a bit.";
+  const p = state.places;
+  let description = "Go outside for a bit.";
+  if (p) {
+    description = [
+      "Top places near you:",
+      ...p.places.map((x, i) => `${i + 1}. ${x.name} (${x.walk_min} min walk): ${p.lines[x.id] ?? ""}`),
+      "Places © OpenStreetMap contributors",
+    ].join("\n");
+  } else if (s) {
+    description = [s.title, ...s.steps.map((step, i) => `${i + 1}. ${step}`), `Notice: ${s.what_to_notice}`].join("\n");
+  }
   const ics = buildIcs({
-    title: s ? `Golden Hour: ${s.title}` : "Golden Hour: go outside",
+    title: p ? `Golden Hour: ${p.places[0].name}` : s ? `Golden Hour: ${s.title}` : "Golden Hour: go outside",
     description,
     startIso: w.start,
     endIso: w.end,
@@ -225,10 +286,99 @@ $("#ics-btn").addEventListener("click", () => {
   downloadIcs(ics, `golden-hour-${w.start.slice(0, 10)}.ics`);
 });
 
+// ---------- places (spec 002: R8–R10) ----------
+
+function elapsedTimer(el) {
+  const started = Date.now();
+  el.textContent = "0s";
+  return setInterval(() => (el.textContent = `${Math.round((Date.now() - started) / 1000)}s`), 1000);
+}
+
+async function postJson(url, body) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+// Real places first; the single activity is the fallback (R10.1). One model call either way.
+async function requestActivity(w) {
+  const token = ++state.suggestToken;
+  state.places = null;
+  state.suggestion = null;
+  $("#suggestion").hidden = true;
+  $("#suggest-note").hidden = true;
+  $("#places").hidden = false;
+  $("#places-loading").hidden = false;
+  $("#places-list").replaceChildren();
+  $("#places-attribution").hidden = true;
+
+  const timer = elapsedTimer($("#places-elapsed"));
+  let found = [];
+  try {
+    const data = await postJson("/api/places", {
+      lat: state.loc.lat,
+      lon: state.loc.lon,
+      window: w,
+      hobbies: state.hobbies,
+    });
+    found = data.places;
+  } catch {
+    found = [];
+  } finally {
+    clearInterval(timer);
+  }
+  if (token !== state.suggestToken) return; // user picked another window meanwhile
+
+  if (found.length < 3) {
+    $("#places").hidden = true;
+    $("#suggest-note").hidden = false;
+    requestSuggestion(w, token);
+    return;
+  }
+
+  state.places = { places: found, lines: {} };
+  renderPlaces(found);
+  try {
+    const lines = await postJson("/api/places/describe", { window: w, places: found, hobbies: state.hobbies });
+    if (token !== state.suggestToken) return;
+    state.places.lines = lines.lines;
+    renderPlaceLines(lines.lines);
+  } catch {
+    if (token !== state.suggestToken) return;
+    renderPlaceLines({});
+  }
+}
+
+function renderPlaces(places) {
+  $("#places-loading").hidden = true;
+  $("#places-attribution").hidden = false;
+  $("#places-list").replaceChildren(
+    ...places.map((p) => {
+      const row = $("#place-row").content.firstElementChild.cloneNode(true);
+      row.dataset.id = p.id;
+      row.querySelector(".place-name").textContent = p.name;
+      row.querySelector(".place-meta").textContent = `${p.kind.replace(/_/g, " ")} · ${p.walk_min} min walk`;
+      row.querySelector(".place-map").href = p.osm_url;
+      return row;
+    }),
+  );
+}
+
+function renderPlaceLines(lines) {
+  for (const row of document.querySelectorAll("#places-list .place")) {
+    const line = row.querySelector(".place-line");
+    line.textContent = lines[row.dataset.id] ?? "Worth a look while you're out.";
+    line.classList.remove("loading");
+  }
+}
+
 // ---------- suggestion (R4) ----------
 
-async function requestSuggestion(w) {
-  const token = ++state.suggestToken;
+async function requestSuggestion(w, token = ++state.suggestToken) {
   state.suggestion = null;
   $("#suggestion").hidden = false;
   $("#suggest-loading").hidden = false;
@@ -295,4 +445,5 @@ function button(label, onClick) {
 }
 
 renderUnitButton();
+renderHobbies();
 locate();

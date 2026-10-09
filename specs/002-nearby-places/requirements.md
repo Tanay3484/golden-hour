@@ -72,13 +72,14 @@ Measured before writing this spec; details in [design.md §2](design.md#2-spike-
 - R10.1 IF OpenStreetMap is unavailable or finds fewer than 3 matching places, THEN the system SHALL show
   the MVP's single activity suggestion (R4) instead. The page SHALL never break or wait more than 25 s
   for places.
-- R10.2 The system SHALL send OpenStreetMap only coordinates rounded to 3 decimals (about 110 m), with an
-  identifying User-Agent as the Overpass usage policy requires.
+- R10.2 The system SHALL send OpenStreetMap only the centre of the user's ~1 km grid cell (coordinates
+  rounded to 2 decimals), never the precise location, with an identifying User-Agent as the Overpass
+  usage policy requires.
 - R10.3 The system MAY cache place results in server memory, keyed by a rounded grid cell (about 1 km),
   for at most 6 hours. The cache holds only public place data, is never written to disk or logs, and is
   cleared on restart. *(This amends R1.3 / N2; see decision 3 below.)*
-- R10.4 The privacy note on the page SHALL say that the rounded location is sent to OpenStreetMap to find
-  places.
+- R10.4 The privacy note on the page SHALL say that an approximate (~1 km) location is sent to
+  OpenStreetMap to find places.
 
 ## 5. Non-functional
 
@@ -110,4 +111,6 @@ Measured before writing this spec; details in [design.md §2](design.md#2-spike-
 
 ## Changelog
 
+- 2026-10-09 — R10.2: query from the ~1 km cell centre (2 decimals) instead of 3-decimal coordinates, so
+  cached results serve everyone in the cell and OSM sees a coarser location.
 - 2026-10-09 — Initial draft, informed by the Overpass and Gemma spike.

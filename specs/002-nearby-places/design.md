@@ -124,15 +124,19 @@ are never put in the prompt, so the model still doesn't see the user's location 
   `https://overpass.private.coffee/api/interpreter`. The second is down tonight but costs nothing to try.
   Configurable via `GH_OVERPASS_URLS`.
 - **Query:** `[out:json][timeout:25];` then for each category
-  `nwr(around:R,LAT,LON)[selector]["name"];out center tags 15;`, with `LAT`/`LON` rounded to 3 decimals
-  (R10.2).
+  `nwr(around:R,LAT,LON)[selector]["name"];out center tags 40;`. `LAT`/`LON` is the **centre of the
+  user's 2-decimal grid cell** (~1.1 km; R10.2), and `R` is the radius for a 40-minute window (≈ 1.07 km)
+  plus 800 m of slack for the cell's half-diagonal, ≈ 1.9 km. One query per cell + hobby set therefore
+  serves every user and window in that cell. The server then filters by the user's **precise**
+  distance and the window's own radius (R8.1); the precise location never leaves the server.
 - **HTTP:** POST, `User-Agent: golden-hour/<version> (+https://github.com/Tanay3484/golden-hour)`, timeout
   27 s per attempt and a **25 s overall budget** across attempts (R10.1). A 429 or 504 moves to the next
   endpoint; nothing sleeps inside a user request.
 - **Parse:** skip elements without a name or coordinates; dedupe by name + category (OSM often has both a
   node and a way for one park); compute `walk_min` with the haversine distance; drop anything beyond `R`.
-- **Cache (R10.3):** in-process dict, key `(round(lat, 2), round(lon, 2), radius bucket, categories)`,
-  6 h TTL, 256 entries, oldest evicted first. Only `Spot` lists are stored. Errors are not cached.
+- **Cache (R10.3):** in-process dict, key `(cell_lat, cell_lon, sorted categories)`, 6 h TTL, 256 entries,
+  oldest evicted first. It stores parsed places with their own coordinates (public data); `walk_min` is
+  recomputed for each user. Errors and empty results are not cached.
 
 ### 4.3 Ranking (`ranking.py`, pure)
 
@@ -201,4 +205,6 @@ are never put in the prompt, so the model still doesn't see the user's location 
 
 ## Changelog
 
+- 2026-10-09 — §4.2: query from the cell centre with a fixed ~1.9 km radius and per-category cap 40,
+  so one cached response serves the whole cell; distances recomputed per user (R10.2 tightened).
 - 2026-10-09 — Initial draft.

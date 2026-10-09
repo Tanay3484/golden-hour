@@ -1,3 +1,4 @@
+import mimetypes
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from functools import lru_cache
@@ -5,6 +6,7 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from golden_hour import __version__, scoring
 from golden_hour.config import settings
@@ -25,7 +27,11 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 Planner = Callable[[list[TimeRange], Forecast, datetime], Plan]
 
+# Some Windows registries map .js to text/plain, which browsers refuse to run as a module.
+mimetypes.add_type("text/javascript", ".js")
+
 app = FastAPI(title="Golden Hour", version=__version__)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 # Dependencies — overridden in tests so nothing touches the network or the real clock.

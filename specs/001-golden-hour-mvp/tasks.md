@@ -85,12 +85,12 @@ original plan had T3, T6 and T9 as `@human`. Tanay wrote the first `score_window
 
 ### Frontend
 
-- [ ] **T8 @ai: Page shell** (R1.1, R1.2, R2.1, R3.3, R3.4, R4.5, N3)
+- [x] **T8 @ai: Page shell** (R1.1, R1.2, R2.1, R3.3, R3.4, R4.5, N3)
   `index.html`, `app.js`, `style.css`: location with city fallback, free-range inputs, plan card +
   alternates, suggestion loading/progress, °C/°F toggle. Leaves mount points for T9.
   *Done when:* the full flow works locally at 360 px wide; page weight < 200 KB.
 
-- [ ] **T9 @ai (was @human): Countdown + calendar** (R5.1, R5.2)
+- [x] **T9 @ai (was @human): Countdown + calendar** (R5.1, R5.2)
   `static/time.js` per design §4.5, hooked into the mount points from T8.
   *Done when:* the countdown passes through "in Xm" → "now — go!" → "done", and the downloaded `.ics`
   imports correctly into Google Calendar and your phone's calendar at the right local time.

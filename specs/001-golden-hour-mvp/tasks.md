@@ -67,19 +67,19 @@ original plan had T3, T6 and T9 as `@human`. Tanay wrote the first `score_window
 
 ### The suggestion
 
-- [ ] **T5 @ai: Ollama client** (R4.2, R6.2, R6.3)
+- [x] **T5 @ai: Ollama client** (R4.2, R6.2, R6.3)
   `llm.py` `OllamaClient.chat_json`; the schema comes from `Suggestion` minus `source`; `GH_OLLAMA_URL`
   normalization in `config.py`; `GH_LLM_TIMEOUT_S` setting.
   *Done when:* `MockTransport` tests pass and a manual call against local `gemma3:4b` returns valid JSON.
 
-- [ ] **T6 @ai (was @human): Prompt + fallbacks** (R4.1, R4.3, R4.4)
+- [x] **T6 @ai (was @human): Prompt + fallbacks** (R4.1, R4.3, R4.4)
   `prompts.build_messages(ctx)` and `fallbacks.py` (≥ 8 activities with tags, `pick_fallback`). Try the
   prompt against both `gemma3:1b` and `gemma3:4b` locally and note the differences. That's material for
   the post.
   *Done when:* the prompt test asserts that duration, weather, time of day and constraints appear in the
   messages; the fallback test covers rain, short windows and golden hour.
 
-- [ ] **T7 @ai: Suggest service + `/api/suggest`** (R4.1–R4.4)
+- [x] **T7 @ai: Suggest service + `/api/suggest`** (R4.1–R4.4)
   `suggest.py` (validate, truncate, fall back, log without context) and the route.
   *Done when:* tests cover valid output, malformed JSON, timeout and over-long lists.
 

@@ -9,7 +9,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
 
 ## Tasks
 
-- [ ] **T15 @ai: Hobbies + categories** (R7.1, R7.2)
+- [x] **T15 @ai: Hobbies + categories** (R7.1, R7.2)
   `hobbies.py` with the two tables from design §3, `categories_for(hobbies)`, and a template line per
   category.
   *Done when:* tests cover every hobby mapping and the "no hobbies → all categories" case.

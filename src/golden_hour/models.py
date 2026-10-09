@@ -93,3 +93,47 @@ class Suggestion(BaseModel):
 class SuggestionContext(BaseModel):
     window: Window
     place_name: str | None = None
+
+
+# Spec 002: nearby places
+
+
+Hobby = Literal["photography", "nature", "history", "art", "running", "reading", "coffee", "sports"]
+
+
+class Spot(BaseModel):
+    """A named public place from OpenStreetMap."""
+
+    id: str  # "node/123"
+    name: str
+    category: str  # key of hobbies.CATEGORIES
+    kind: str  # raw OSM value, e.g. "viewpoint"
+    lat: float
+    lon: float
+    walk_min: int = 0  # from the requesting user's precise location
+    covered: bool = False
+    facts: list[str] = Field(default_factory=list, max_length=3)
+    osm_url: str
+
+
+class PlacesRequest(BaseModel):
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+    window: Window
+    hobbies: list[Hobby] = Field(default_factory=list, max_length=3)
+
+
+class PlacesResponse(BaseModel):
+    places: list[Spot]
+    attribution: str = "Places © OpenStreetMap contributors"
+
+
+class DescribeRequest(BaseModel):
+    window: Window
+    places: list[Spot] = Field(min_length=1, max_length=5)
+    hobbies: list[Hobby] = Field(default_factory=list, max_length=3)
+
+
+class PlaceLines(BaseModel):
+    lines: dict[str, str]  # Spot.id -> sentence
+    source: dict[str, Literal["model", "template"]]

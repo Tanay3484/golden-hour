@@ -52,7 +52,12 @@ def get_weather() -> WeatherClient:
 
 @lru_cache
 def get_llm() -> OllamaClient:
-    return OllamaClient(settings.ollama_url, settings.model, settings.llm_timeout_s)
+    return OllamaClient(
+        settings.ollama_url,
+        settings.model,
+        settings.llm_timeout_s,
+        num_thread=settings.llm_num_thread,
+    )
 
 
 @lru_cache

@@ -17,6 +17,9 @@ services:
         value: gemma3:1b
       - key: GH_LLM_TIMEOUT_S
         value: "90"
+      # 1 thread per CPU: Ollama's default uses every host core and is ~2x slower on a 1-CPU plan.
+      - key: GH_LLM_NUM_THREAD
+        value: "1"
       - key: GH_OLLAMA_URL
         fromService:
           type: pserv

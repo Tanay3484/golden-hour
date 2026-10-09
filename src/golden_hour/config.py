@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     ollama_url: str = "http://localhost:11434"
     model: str = "gemma3:4b"
     llm_timeout_s: float = 60
+    # CPU threads for inference. Unset = Ollama's default (all host cores), which on a 1-CPU
+    # container oversubscribes and halved speed in testing; Render sets 1 (001 design §5).
+    llm_num_thread: int | None = None
     # Public Overpass instances, tried in order (spec 002 design §4.2). Env: JSON list.
     overpass_urls: list[str] = [
         "https://overpass-api.de/api/interpreter",

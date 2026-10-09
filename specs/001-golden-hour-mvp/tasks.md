@@ -97,7 +97,7 @@ original plan had T3, T6 and T9 as `@human`. Tanay wrote the first `score_window
 
 ### Ship
 
-- [ ] **T10 @ai: Render deployment** (R6.1, R6.2, N4) _(config done and tested in Docker; waiting on the Render "Apply" click)_
+- [x] **T10 @ai: Render deployment** (R6.1, R6.2, N4) _(live 2026-10-09 at https://golden-hour-ahl6.onrender.com)_
   `ollama/Dockerfile` (model baked in at build time), the two-service `render.yaml`, deploy via Blueprint.
   You click "Apply" in the Render dashboard; the AI can't log in for you.
   *Done when:* the live URL's health check is OK and a suggestion comes back with `source: "model"` in

@@ -70,3 +70,17 @@ def test_chat_json_timeout_becomes_llm_error():
 )
 def test_ollama_url_normalized(raw, expected):
     assert Settings(ollama_url=raw).ollama_url == expected
+
+
+def test_num_thread_passed_only_when_set():
+    bodies = []
+
+    def handler(request):
+        bodies.append(json.loads(request.content))
+        return chat_reply("{}")
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    OllamaClient("http://o", "m", http=http).chat_json([], {})
+    OllamaClient("http://o", "m", http=http, num_thread=1).chat_json([], {})
+    assert "num_thread" not in bodies[0]["options"]
+    assert bodies[1]["options"]["num_thread"] == 1

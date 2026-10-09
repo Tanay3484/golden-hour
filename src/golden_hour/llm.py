@@ -11,13 +11,22 @@ class LLMError(Exception):
 
 class OllamaClient:
     def __init__(
-        self, base_url: str, model: str, timeout_s: float = 60, http: httpx.Client | None = None
+        self,
+        base_url: str,
+        model: str,
+        timeout_s: float = 60,
+        http: httpx.Client | None = None,
+        num_thread: int | None = None,
     ):
         self.base_url = base_url.rstrip("/")
         self.model = model
+        self.num_thread = num_thread
         self._http = http or httpx.Client(timeout=timeout_s)
 
     def chat_json(self, messages: list[dict], schema: dict, temperature: float = 0.7) -> dict:
+        options: dict = {"temperature": temperature}
+        if self.num_thread:
+            options["num_thread"] = self.num_thread
         try:
             resp = self._http.post(
                 f"{self.base_url}/api/chat",
@@ -26,7 +35,7 @@ class OllamaClient:
                     "messages": messages,
                     "format": schema,
                     "stream": False,
-                    "options": {"temperature": temperature},
+                    "options": options,
                 },
             )
             resp.raise_for_status()

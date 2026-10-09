@@ -1,6 +1,6 @@
 # 002 — Nearby places for your hobbies: Tasks
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-09)
 - **Implements:** [design.md](design.md)
 - **Owners:** `@ai` builds (handover of 2026-10-09 still applies); `@human` approves and field-tests
 

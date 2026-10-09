@@ -1,6 +1,6 @@
 # 002 — Nearby places for your hobbies: Requirements
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-09)
 - **Owner:** @Tanay3484
 - **Builds on:** [001 Golden Hour MVP](../001-golden-hour-mvp/requirements.md) (requirement IDs continue from R6)
 - **Deadline:** must not put the 001 submission at risk (due 2026-10-11 23:59 PDT)

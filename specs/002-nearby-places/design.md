@@ -1,6 +1,6 @@
 # 002 — Nearby places for your hobbies: Design
 
-- **Status:** Draft — awaiting review
+- **Status:** Approved (2026-10-09)
 - **Implements:** [requirements.md](requirements.md)
 
 ## 1. Flow

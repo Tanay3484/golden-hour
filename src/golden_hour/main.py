@@ -10,16 +10,24 @@ from fastapi.staticfiles import StaticFiles
 
 from golden_hour import __version__, scoring
 from golden_hour.config import settings
+from golden_hour.describe import describe
+from golden_hour.hobbies import categories_for
 from golden_hour.llm import OllamaClient
 from golden_hour.models import (
+    DescribeRequest,
     Forecast,
     Place,
+    PlaceLines,
+    PlacesRequest,
+    PlacesResponse,
     Plan,
     PlanRequest,
     Suggestion,
     SuggestionContext,
     TimeRange,
 )
+from golden_hour.places import OverpassClient, radius_for
+from golden_hour.ranking import rank_places
 from golden_hour.suggest import suggest
 from golden_hour.weather import WeatherClient, WeatherError
 
@@ -45,6 +53,12 @@ def get_weather() -> WeatherClient:
 @lru_cache
 def get_llm() -> OllamaClient:
     return OllamaClient(settings.ollama_url, settings.model, settings.llm_timeout_s)
+
+
+@lru_cache
+def get_overpass() -> OverpassClient:
+    # One instance per process, so its in-memory place cache is shared (R10.3).
+    return OverpassClient(settings.overpass_urls, settings.overpass_budget_s)
 
 
 def get_clock() -> Callable[[], datetime]:
@@ -94,6 +108,22 @@ def plan(
 def suggestion(ctx: SuggestionContext, llm: OllamaClient = Depends(get_llm)) -> Suggestion:
     # Never fails: falls back to a curated activity if the model is down or returns junk (R4.4).
     return suggest(ctx, llm)
+
+
+@app.post("/api/places", response_model=PlacesResponse)
+def places(
+    req: PlacesRequest, overpass: OverpassClient = Depends(get_overpass)
+) -> PlacesResponse:
+    # Never fails because of OSM: no places means the page falls back to /api/suggest (R10.1).
+    nearby = overpass.nearby(
+        req.lat, req.lon, radius_for(req.window.duration_min), categories_for(req.hobbies)
+    )
+    return PlacesResponse(places=rank_places(nearby, req.hobbies, req.window))
+
+
+@app.post("/api/places/describe", response_model=PlaceLines)
+def place_lines(req: DescribeRequest, llm: OllamaClient = Depends(get_llm)) -> PlaceLines:
+    return describe(req.window, req.places, req.hobbies, llm)
 
 
 @app.get("/")

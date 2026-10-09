@@ -30,7 +30,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
   *Done when:* unit tests pass, and a local run on the Berlin fixture with gemma3:1b and 4b invents no
   facts in 3 tries each (checked by hand; findings go in the design changelog).
 
-- [ ] **T19 @ai: API routes** (R8, R9, R10.1)
+- [x] **T19 @ai: API routes** (R8, R9, R10.1)
   `POST /api/places`, `POST /api/places/describe` with dependency overrides.
   *Done when:* API tests pass, including OSM down → `places: []` with status 200.
 

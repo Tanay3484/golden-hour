@@ -54,7 +54,7 @@ crowd out the others.
 | `museum` | `tourism~"^(museum|gallery)$"` | **yes** |
 | `library` | `amenity=library` | **yes** |
 | `cafe` | `amenity=cafe` + `outdoor_seating=yes` | partly |
-| `sport` | `leisure~"^(pitch|track|sports_centre|fitness_station)$"` | no |
+| `sport` | `leisure~"^(pitch|track|fitness_station)$"` | no |
 
 | Hobby | Categories (first = strongest match) |
 |---|---|
@@ -205,6 +205,8 @@ are never put in the prompt, so the model still doesn't see the user's location 
 
 ## Changelog
 
+- 2026-10-09 — T17: dropped `sports_centre` from `sport`; in real Berlin data it surfaced a paid
+  axe-throwing venue. Pitches, tracks and outdoor fitness stations are free to use.
 - 2026-10-09 — T16: Overpass rejected the default 512 MiB `maxsize` with fast 504s on a busy server;
   declaring `[maxsize:67108864]` got Pune (3.2 s) and Mumbai (2.9 s) through on the main instance.
   Dedupe ignores spaces and punctuation in names ("Shaniwarwada" = "Shaniwar Wada").

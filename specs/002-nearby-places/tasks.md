@@ -20,7 +20,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
   *Done when:* `MockTransport` tests pass (504 → failover, both down → `[]`, cache hit makes 0 requests),
   and one live call each for Pune and Berlin succeeds or degrades to `[]` within 25 s.
 
-- [ ] **T17 @ai: Ranking** (R8.2)
+- [x] **T17 @ai: Ranking** (R8.2)
   `ranking.py` `rank_places` per design §4.3.
   *Done when:* table-driven tests for hobby match, rain → covered, golden hour, the variety cap, tie-breaks
   and < 3 → `[]`.

@@ -93,7 +93,7 @@ CATEGORIES: dict[str, Category] = {
         ),
         Category(
             "sport",
-            (Rule("leisure", ("pitch", "track", "sports_centre", "fitness_station")),),
+            (Rule("leisure", ("pitch", "track", "fitness_station")),),
             "Do one lap or a few stretches, at whatever pace feels good.",
         ),
     ]

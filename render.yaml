@@ -1,13 +1,32 @@
-# Render Blueprint — https://render.com/docs/blueprint-spec
-# Model-serving service is defined in specs (see specs/001-golden-hour/design.md) and added in a later task.
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Two services on one private network (design §5):
+#   golden-hour         public FastAPI app
+#   golden-hour-ollama  private Ollama server with gemma3:1b baked into the image
+# Both must be in the same region to reach each other privately.
 services:
   - type: web
     name: golden-hour
     runtime: docker
-    plan: starter
+    region: singapore
+    plan: 0.5c-512mb
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /api/health
     envVars:
       - key: GH_MODEL
         value: gemma3:1b
+      - key: GH_LLM_TIMEOUT_S
+        value: "90"
       - key: GH_OLLAMA_URL
-        sync: false
+        fromService:
+          type: pserv
+          name: golden-hour-ollama
+          property: hostport
+
+  - type: pserv
+    name: golden-hour-ollama
+    runtime: docker
+    region: singapore
+    plan: 1c-2g
+    dockerfilePath: ./ollama/Dockerfile
+    dockerContext: ./ollama

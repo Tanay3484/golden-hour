@@ -259,6 +259,10 @@ downloadIcs(icsString, filename)       // Blob + temporary <a download>
 ## Changelog
 
 - 2026-10-08 — Initial draft.
+- 2026-10-09 — T10: Render renamed plans; using `0.5c-512mb` (web) and `1c-2g` (Ollama), both in
+  `singapore` (same region is required for the private network). Measured in Docker with the same limits:
+  Ollama + gemma3:1b uses 1.2 GB of 2 GB; suggestions take 20–40 s on 1 CPU. `GH_LLM_TIMEOUT_S=90`
+  on Render. Ollama image pinned to `0.40.2`, warmed up at start by `ollama/start.sh`.
 - 2026-10-09 — T9: `startCountdown` also takes the location's IANA `timeZone` (a searched city can
   differ from the browser's zone); `.ics` uses UTC times plus a 10-minute alarm. `time.js` is tested
   in CI with Node (`tests/js/time.test.mjs`).

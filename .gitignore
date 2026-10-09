@@ -6,3 +6,6 @@ __pycache__/
 dist/
 .pytest_cache/
 .ruff_cache/
+
+# Local drafts (DEV post etc.), not part of the project
+drafts/

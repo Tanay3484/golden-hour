@@ -45,7 +45,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
   post draft's "How I Built It".
   *Done when:* specs, README and draft agree with the code.
 
-- [ ] **T22 @ai: Live acceptance on Render** (all of 002)
+- [x] **T22 @ai: Live acceptance on Render** (all of 002) _(2026-10-09; R9.2 partial, see checklist)_
   After deploy, run the checklist below against the live URL.
 
 - [ ] **T23 @human: Use it outside once** (D4, shared with 001 T12)
@@ -55,17 +55,17 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
 
 | AC | Check | ✓ |
 |----|-------|---|
-| R7.1–R7.3 | Pick 3 hobbies → reload → still picked; 4th can't be added; none picked works | |
-| R8.1 | All places within ~⅓ of the window's walk; longer window → wider radius | |
-| R8.2 | Photography at golden hour → views/water first; rain ≥ 50% → covered places first; ≤ 2 per kind | |
-| R8.3 / R8.5 | Name, kind, minutes, Map link opens the right place; attribution visible | |
-| R8.4 / N6 | List appears before the lines; list ≤ 25 s, lines ≤ 60 s | |
-| R9.2 | Lines don't state facts that aren't in OSM data (spot-check 10) | |
-| R9.3 | Ollama stopped → template lines, list still shown | |
-| R10.1 | Overpass unreachable → single suggestion with note, within 25 s | |
-| R10.2 | Request to Overpass uses 3-decimal coordinates and the Golden Hour User-Agent | |
-| R10.3 | Second request for the same area makes no Overpass call; nothing written to disk or logs | |
-| R10.4 | Footer privacy text updated | |
+| R7.1–R7.3 | Pick 3 hobbies → reload → still picked; 4th can't be added; none picked works | ✅ live: 3 picked, other 5 disabled, kept after reload |
+| R8.1 | All places within ~⅓ of the window's walk; longer window → wider radius | ✅ unit tests; live walks 2–10 min |
+| R8.2 | Photography at golden hour → views/water first; rain ≥ 50% → covered places first; ≤ 2 per kind | ✅ unit tests + live (photography → art, fort, parks; reading/coffee → cafés, library) |
+| R8.3 / R8.5 | Name, kind, minutes, Map link opens the right place; attribution visible | ✅ live |
+| R8.4 / N6 | List appears before the lines; list ≤ 25 s, lines ≤ 60 s | ✅ live: list 2.5–5.1 s (0.1 s cached), lines 27–32 s |
+| R9.2 | Lines don't state facts that aren't in OSM data (spot-check 10) | ⚠️ 1B adds generic detail ("detailed carvings", "a pastry"); 4B passes. Known gap, design changelog |
+| R9.3 | Ollama stopped → template lines, list still shown | ✅ unit tests; live rejects some lines → templates |
+| R10.1 | Overpass unreachable → single suggestion with note, within 25 s | ✅ live browser run with /api/places blocked; server-side failure in unit tests |
+| R10.2 | Request to Overpass uses 2-decimal cell-centre coordinates and the Golden Hour User-Agent | ✅ unit test inspects the outgoing query |
+| R10.3 | Second request for the same area makes no Overpass call; nothing written to disk or logs | ✅ live: repeat request 0.1 s; cache is in memory only |
+| R10.4 | Footer privacy text updated | ✅ live |
 
 ## Estimate
 

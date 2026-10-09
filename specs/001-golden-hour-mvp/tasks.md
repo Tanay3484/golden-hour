@@ -103,7 +103,7 @@ original plan had T3, T6 and T9 as `@human`. Tanay wrote the first `score_window
   *Done when:* the live URL's health check is OK and a suggestion comes back with `source: "model"` in
   ≤ 45 s.
 
-- [ ] **T14 @ai: Acceptance check** (all)
+- [x] **T14 @ai: Acceptance check** (all) _(2026-10-09, live; see checklist)_
   Run the checklist below against the live URL and fix or log anything that fails.
 
 - [ ] **T12 @human: Touch grass** (D4)
@@ -119,16 +119,16 @@ original plan had T3, T6 and T9 as `@human`. Tanay wrote the first `score_window
 
 | AC | Check | ✓ |
 |----|-------|---|
-| R1.1 / R1.2 | Allow location → plan works; deny → city search works | |
-| R1.3 / N2 | Server logs contain no coordinates | |
-| R2.1 / R2.2 | Two ranges respected; no ranges → now until sunset | |
-| R2.3 | Late at night → tomorrow's window with a note | |
-| R3.1–R3.3 | Best + ≤ 2 alternates with reasons; matches the forecast | |
-| R3.4 | °F toggle converts and persists | |
-| R4.1–R4.3 | Suggestion fits the window, ≤ 3 steps, walking distance, nothing to buy | |
-| R4.4 | Ollama stopped → fallback shown, window still shown | |
-| R4.5 / N1 | Window ≤ 2 s; suggestion ≤ 45 s with progress | |
-| R5.1 / R5.2 | `.ics` imports correctly; countdown runs | |
-| R6.1–R6.3 | Blueprint deploy works; local run needs no keys | |
-| N3 | Usable at 360 px | |
-| N4 | Render usage dashboard is on track for under $50 | |
+| R1.1 / R1.2 | Allow location → plan works; deny → city search works | ✅ live (Pune via geolocation, Berlin via search) |
+| R1.3 / N2 | Server logs contain no coordinates | ✅ Docker, same image: no request lines logged (`--no-access-log`) |
+| R2.1 / R2.2 | Two ranges respected; no ranges → now until sunset | ✅ unit tests + local browser run (17:00–19:00 range) |
+| R2.3 | Late at night → tomorrow's window with a note | ✅ live, Pune at 22:05 IST → tomorrow 06:30 with note |
+| R3.1–R3.3 | Best + ≤ 2 alternates with reasons; matches the forecast | ✅ live |
+| R3.4 | °F toggle converts and persists | ✅ local browser run |
+| R4.1–R4.3 | Suggestion fits the window, ≤ 3 steps, walking distance, nothing to buy | ✅ live, `source: model` |
+| R4.4 | Ollama stopped → fallback shown, window still shown | ✅ live (first deploy had no Ollama: fallback in 0.3 s, window shown) |
+| R4.5 / N1 | Window ≤ 2 s; suggestion ≤ 45 s with progress | ✅ live: window 0.7–1.2 s; suggestion 16–18 s |
+| R5.1 / R5.2 | `.ics` imports correctly; countdown runs | ✅ local browser run + Node tests (UTC times, folding, alarm) |
+| R6.1–R6.3 | Blueprint deploy works; local run needs no keys | ✅ Blueprint (needed one Manual Sync); local run keyless |
+| N3 | Usable at 360 px | ✅ live, no horizontal overflow at 360 px, light + dark |
+| N4 | Render usage dashboard is on track for under $50 | ✅ Blueprint estimate $32/month, billed for time running; ≈ $10–12 through judging |

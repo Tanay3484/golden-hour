@@ -259,6 +259,7 @@ downloadIcs(icsString, filename)       // Blob + temporary <a download>
 ## Changelog
 
 - 2026-10-08 — Initial draft.
+- 2026-10-09 — T14 (live, after the fix below): suggestions 16–18 s, place lines 27–32 s on Render.
 - 2026-10-09 — T14 (live): suggestions took 38–80 s on Render. Cause: Ollama sizes its thread pool from
   the host's cores, oversubscribing the 1-CPU container. Measured in Docker at 1 CPU: default threads
   42–60 s, `num_thread=1` 32 s (output ~6.5 → ~13.8 tok/s). New setting `GH_LLM_NUM_THREAD`, set to 1 in

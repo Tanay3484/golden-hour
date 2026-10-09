@@ -33,5 +33,5 @@ gate** before the next phase starts. Approval is recorded by setting `Status: Ap
 
 | ID | Feature | Phase | Status |
 |----|---------|-------|--------|
-| 001 | [Golden Hour MVP](001-golden-hour-mvp/) | Implement | Approved 2026-10-08 — in progress |
-| 002 | [Nearby places for your hobbies](002-nearby-places/) | Implement | Approved 2026-10-09 — in progress |
+| 001 | [Golden Hour MVP](001-golden-hour-mvp/) | Done | Live 2026-10-09 — T12/T13 (outdoor test, post) with Tanay |
+| 002 | [Nearby places for your hobbies](002-nearby-places/) | Done | Live 2026-10-09 — R9.2 partial on 1B; T23 with Tanay |

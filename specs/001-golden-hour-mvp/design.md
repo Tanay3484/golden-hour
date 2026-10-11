@@ -210,6 +210,13 @@ test touches the network.
 
 ### 4.5 Frontend (`static/`)
 
+**City search (R1.4):** the input is an ARIA combobox (`role="combobox"`, `aria-autocomplete="list"`,
+`aria-activedescendant`) over a `role="listbox"` of up to 5 options. Input is debounced 250 ms; each new
+query aborts the previous request (`AbortController`) and a sequence number drops late responses. Below
+3 characters nothing is sent (Open-Meteo returns only exact matches for 2). `/api/geocode` adds
+`admin1` (region) and drops duplicate name + region + country rows. Nothing is cached server-side, so
+search text never outlives the request.
+
 Vanilla JS, no build step, one page (N3). Its states are: *locating → form → planning → plan shown →
 suggestion loading → suggestion shown*. The °C/°F toggle is stored in `localStorage`.
 
@@ -278,3 +285,4 @@ downloadIcs(icsString, filename)       // Blob + temporary <a download>
   titles or notices (→ fallback).
 - 2026-10-09 — T3: `pick_windows` tie-break prefers golden hour before earlier start.
 - 2026-10-08 — T1: added `Place` and `PlanRequest` to §4.1 (they were implied by §4.4).
+- 2026-10-11 — §4.5: city search-as-you-type (R1.4), `Place.admin1`, dedupe.

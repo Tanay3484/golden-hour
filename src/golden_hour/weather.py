@@ -36,12 +36,22 @@ class WeatherClient:
         except (KeyError, TypeError, ValueError) as e:
             raise WeatherError(f"unexpected forecast payload: {e}") from e
 
-    def geocode(self, q: str) -> list[Place]:
-        data = self._get(GEOCODE_URL, {"name": q, "count": 5, "language": "en", "format": "json"})
-        return [
-            Place(name=r["name"], country=r.get("country"), lat=r["latitude"], lon=r["longitude"])
-            for r in data.get("results", [])
-        ]
+    def geocode(self, q: str, limit: int = 5) -> list[Place]:
+        # Ask for extra rows: Open-Meteo sometimes repeats a place, and duplicates are dropped
+        # (R1.4).
+        params = {"name": q, "count": limit * 2, "language": "en", "format": "json"}
+        data = self._get(GEOCODE_URL, params)
+        places: dict[tuple, Place] = {}
+        for r in data.get("results", []):
+            place = Place(
+                name=r["name"],
+                admin1=r.get("admin1"),
+                country=r.get("country"),
+                lat=r["latitude"],
+                lon=r["longitude"],
+            )
+            places.setdefault((place.name, place.admin1, place.country), place)
+        return list(places.values())[:limit]
 
     def _get(self, url: str, params: dict) -> dict:
         try:

@@ -56,6 +56,7 @@ def test_geocode_parses_fixture():
     assert 1 <= len(places) <= 5
     assert places[0].name == "Berlin"
     assert places[0].country == "Germany"
+    assert places[0].admin1 == "State of Berlin"
     assert places[0].lat == pytest.approx(52.52, abs=0.01)
 
 
@@ -72,3 +73,23 @@ def test_upstream_errors_raise_weather_error(status):
 def test_malformed_payload_raises_weather_error():
     with pytest.raises(WeatherError):
         client_returning({"timezone": "UTC"}).fetch_forecast(0, 0)
+
+
+def test_geocode_drops_duplicates_and_caps_results():
+    row = {
+        "name": "Pun",
+        "admin1": "Punjab",
+        "country": "Pakistan",
+        "latitude": 30.0,
+        "longitude": 71.0,
+    }
+    other = [
+        {"name": f"Pun {i}", "country": "X", "latitude": float(i), "longitude": 0.0}
+        for i in range(8)
+    ]
+    seen = []
+    places = client_returning(
+        {"results": [row, dict(row, latitude=30.1), *other]}, seen=seen
+    ).geocode("Pun")
+    assert [p.name for p in places] == ["Pun", "Pun 0", "Pun 1", "Pun 2", "Pun 3"]
+    assert seen[0].url.params["count"] == "10"

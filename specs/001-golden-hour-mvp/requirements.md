@@ -30,6 +30,10 @@ infrastructure we control, using only open data.
   resolve it to coordinates.
 - R1.3 The system SHALL NOT store the user's location on the server beyond the lifetime of a request.
   *(Amended by spec 002 R10.3: public place data may be cached in memory per ~1 km grid cell for ≤ 6 h.)*
+- R1.4 WHILE the user types a city name of 3 or more characters, the system SHALL show up to 5 matching
+  places (name, region, country) about 250 ms after typing pauses, without the user pressing Enter. The
+  list SHALL be usable by mouse, touch and keyboard (↑/↓, Enter, Esc) and announced to screen readers.
+  Duplicate results SHALL be merged. Search text SHALL NOT be stored or logged (R1.3).
 
 ### R2 — Free time
 *As a user, I want to tell the app when I'm free, so suggestions fit my day.*
@@ -111,3 +115,4 @@ Resolved with the proposed defaults on 2026-10-08. Override any of them during r
 - 2026-10-07 — Initial draft.
 - 2026-10-08 — Resolved open questions with defaults; added R3.4.
 - 2026-10-09 — R1.3 / N2 amended for spec 002's in-memory place cache (decision 3, approved).
+- 2026-10-11 — R1.4 added at the owner's request: search-as-you-type for the city fallback.

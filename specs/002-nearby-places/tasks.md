@@ -48,7 +48,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
 - [x] **T22 @ai: Live acceptance on Render** (all of 002) _(2026-10-09; R9.2 partial, see checklist)_
   After deploy, run the checklist below against the live URL.
 
-- [ ] **T27 @ai: Browser fallback for Overpass** (R10.4, R10.5)
+- [x] **T27 @ai: Browser fallback for Overpass** (R10.4, R10.5) _(2026-10-10: live, Pune and Berlin 5 places)_
   Server: `nearby` → `None` when unreachable, `fallback` in `PlacesResponse`, `POST /api/places/from-osm`
   (validated, never cached). Browser: try the query against each URL within 25 s, then post the
   elements. Footer privacy note updated.
@@ -73,7 +73,7 @@ Same rules as 001: one task ≈ one commit, commit messages carry task and requi
 | R10.2 | Request to Overpass uses 2-decimal cell-centre coordinates and the Golden Hour User-Agent | ✅ unit test inspects the outgoing query |
 | R10.3 | Second request for the same area makes no Overpass call; nothing written to disk or logs | ✅ live: repeat request 0.1 s; cache is in memory only |
 | R10.4 | Footer privacy text updated | ✅ live (updated again for R10.5) |
-| R10.5 | Server's Overpass blocked → browser fetch → 5 places; nothing cached | |
+| R10.5 | Server's Overpass blocked → browser fetch → 5 places; nothing cached | ✅ live: server 0 places + fallback offered; browser got 5 for Pune and Berlin |
 
 ## Estimate
 

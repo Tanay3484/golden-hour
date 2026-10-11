@@ -8,7 +8,7 @@
   approval it becomes the implementation.*
   *Done when:* screenshots at 1440 px (light) and 390 px (dark) match the design; page < 200 KB.
 
-- [ ] **T25 @ai: Regression check** (V6)
+- [x] **T25 @ai: Regression check** (V6) _(2026-10-10: local and live; all three journeys pass, no console errors)_
   *Done when:* `pytest`, `ruff`, `node tests/js/time.test.mjs`, and the three browser journeys pass
   locally, then once more on the live URL after deploy.
 

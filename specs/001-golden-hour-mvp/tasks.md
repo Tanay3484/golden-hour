@@ -103,7 +103,7 @@ original plan had T3, T6 and T9 as `@human`. Tanay wrote the first `score_window
   *Done when:* the live URL's health check is OK and a suggestion comes back with `source: "model"` in
   ≤ 45 s.
 
-- [ ] **T28 @ai: City search-as-you-type** (R1.4)
+- [x] **T28 @ai: City search-as-you-type** (R1.4) _(2026-10-11, browser-tested locally)_
   `Place.admin1` + dedupe in `weather.geocode`; combobox in `app.js` per design §4.5.
   *Done when:* unit tests cover region + dedupe; a browser test types "Pun" (no Enter) → "Pune,
   Maharashtra, India" appears → ↓ + Enter selects it; typing fast shows only the latest results.

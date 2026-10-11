@@ -479,3 +479,15 @@ h1 { font-size: clamp(2rem, 1.4rem + 2.4vw, 3rem); line-height: 1.08; letter-spa
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* City search-as-you-type (R1.4) */
+#city-spinner { margin-right: 2px; }
+.city-option { display: flex; align-items: center; gap: 10px; }
+.city-option .icon { color: var(--muted); }
+.city-option[aria-selected="true"] { background: var(--surface-2); border-color: var(--line-strong); }
+.city-option[aria-selected="true"] .icon { color: var(--accent); }
+.city-text { display: grid; min-width: 0; }
+.city-name { font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.city-name strong { font-weight: 750; color: var(--accent-strong); }
+.city-region { color: var(--muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (prefers-color-scheme: dark) { .city-name strong { color: var(--accent); } }

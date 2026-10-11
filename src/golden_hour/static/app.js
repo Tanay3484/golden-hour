@@ -168,26 +168,139 @@ function showCitySearch(message) {
   $("#city").focus();
 }
 
-$("#city-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const q = $("#city").value.trim();
-  const list = $("#city-results");
-  list.replaceChildren();
-  const note = (msg) => list.append(el("li", "option-note", msg));
+// ---------- city search-as-you-type (R1.2, R1.4) ----------
+
+const MIN_LIVE_CHARS = 3; // Open-Meteo only matches exact names below 3 characters
+const DEBOUNCE_MS = 250;
+const city = { seq: 0, timer: null, abort: null, places: [], query: "", active: -1 };
+
+const cityLabel = (p) => [p.name, p.admin1, p.country].filter(Boolean).join(", ");
+
+// "Pun" in "Pune" → Pun in bold, so it's obvious why each result matched.
+function highlightMatch(name, q) {
+  const frag = document.createDocumentFragment();
+  const i = name.toLowerCase().indexOf(q.toLowerCase());
+  if (i < 0) frag.append(name);
+  else frag.append(name.slice(0, i), el("strong", null, name.slice(i, i + q.length)), name.slice(i + q.length));
+  return frag;
+}
+
+function setCityExpanded(open) {
+  $("#city").setAttribute("aria-expanded", String(open));
+  if (!open) $("#city").removeAttribute("aria-activedescendant");
+}
+
+function clearCityResults() {
+  clearTimeout(city.timer);
+  city.abort?.abort();
+  city.seq++; // any response still in flight is now stale
+  city.places = [];
+  city.query = "";
+  city.active = -1;
+  $("#city-results").replaceChildren();
+  $("#city-spinner").hidden = true;
+  setCityExpanded(false);
+}
+
+function cityNote(msg) {
+  city.places = [];
+  city.active = -1;
+  $("#city-results").replaceChildren(el("li", "option-note", msg));
+  setCityExpanded(false);
+  $("#city-live").textContent = msg;
+}
+
+function renderCityResults(places, q) {
+  city.places = places;
+  city.query = q;
+  city.active = -1;
+  if (!places.length) return cityNote("No matches yet. Keep typing, or try a bigger nearby city.");
+  $("#city-results").replaceChildren(
+    ...places.map((p, i) => {
+      const opt = button("", () => pickCity(i), "city-option");
+      opt.id = `city-opt-${i}`;
+      opt.tabIndex = -1;
+      opt.setAttribute("role", "option");
+      opt.setAttribute("aria-selected", "false");
+      const text = el("span", "city-text", el("span", "city-name", highlightMatch(p.name, q)));
+      const region = [p.admin1, p.country].filter(Boolean).join(", ");
+      if (region) text.append(el("span", "city-region", region));
+      opt.append(icon("i-pin"), text);
+      const li = el("li", null, opt);
+      li.setAttribute("role", "presentation");
+      return li;
+    }),
+  );
+  setCityExpanded(true);
+  $("#city").removeAttribute("aria-activedescendant");
+  $("#city-live").textContent = `${places.length} ${places.length === 1 ? "place" : "places"} found`;
+}
+
+function setActiveCity(i) {
+  const opts = [...document.querySelectorAll("#city-results [role=option]")];
+  if (!opts.length) return;
+  city.active = (i + opts.length) % opts.length;
+  opts.forEach((o, j) => o.setAttribute("aria-selected", String(j === city.active)));
+  $("#city").setAttribute("aria-activedescendant", opts[city.active].id);
+  opts[city.active].scrollIntoView({ block: "nearest" });
+}
+
+function pickCity(i) {
+  const p = city.places[i];
+  if (!p) return;
+  $("#city").value = p.name;
+  clearCityResults();
+  setLocation({ lat: p.lat, lon: p.lon, name: cityLabel(p) });
+}
+
+async function searchCities(q) {
+  clearTimeout(city.timer);
+  city.abort?.abort();
+  const seq = ++city.seq;
+  const abort = new AbortController();
+  city.abort = abort;
+  $("#city-spinner").hidden = false;
   try {
-    const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
+    const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, { signal: abort.signal });
     if (!res.ok) throw new Error(res.status);
     const places = await res.json();
-    if (!places.length) return note("No matches. Try a bigger nearby city.");
-    for (const p of places) {
-      const label = [p.name, p.country].filter(Boolean).join(", ");
-      const b = button(label, () => setLocation({ lat: p.lat, lon: p.lon, name: label }));
-      b.prepend(icon("i-pin"), " ");
-      list.append(el("li", null, b));
-    }
-  } catch {
-    note("City search is unavailable right now. Please try again.");
+    if (seq !== city.seq) return; // the user kept typing; a newer search owns the list
+    renderCityResults(places, q);
+  } catch (e) {
+    if (e.name === "AbortError" || seq !== city.seq) return;
+    cityNote("City search is unavailable right now. Please try again.");
+  } finally {
+    if (seq === city.seq) $("#city-spinner").hidden = true;
   }
+}
+
+$("#city").addEventListener("input", () => {
+  const q = $("#city").value.trim();
+  clearTimeout(city.timer);
+  if (q.length < MIN_LIVE_CHARS) return clearCityResults();
+  city.timer = setTimeout(() => searchCities(q), DEBOUNCE_MS);
+});
+
+$("#city").addEventListener("keydown", (e) => {
+  if (e.key === "ArrowDown" && city.places.length) {
+    e.preventDefault();
+    setActiveCity(city.active + 1);
+  } else if (e.key === "ArrowUp" && city.places.length) {
+    e.preventDefault();
+    setActiveCity(city.active - 1);
+  } else if (e.key === "Escape") {
+    clearCityResults();
+  }
+});
+
+// Enter picks the highlighted result, or the top one if the list matches what's typed;
+// otherwise it searches immediately instead of waiting for the debounce (R1.2).
+$("#city-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const q = $("#city").value.trim();
+  if (city.active >= 0) return pickCity(city.active);
+  if (city.places.length && city.query === q) return pickCity(0);
+  if (q.length >= 2) searchCities(q);
 });
 
 function setLocation(loc) {
@@ -200,7 +313,8 @@ function setLocation(loc) {
 
 $("#change-place").addEventListener("click", () => {
   $("#when").hidden = true;
-  $("#city-results").replaceChildren();
+  clearCityResults();
+  $("#city").value = "";
   showCitySearch("Search for a city.");
 });
 

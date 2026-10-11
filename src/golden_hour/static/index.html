@@ -82,10 +82,15 @@
               <label for="city" class="sr-only">City</label>
               <div class="input-group">
                 <svg class="icon input-icon" aria-hidden="true"><use href="#i-search"/></svg>
-                <input id="city" name="city" type="search" placeholder="Search for a city" minlength="2" autocomplete="address-level2" required>
+                <input id="city" name="city" type="text" placeholder="Start typing a city…" minlength="2" required
+                       autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list"
+                       aria-expanded="false" aria-controls="city-results" aria-describedby="city-hint">
+                <span id="city-spinner" class="spinner" aria-hidden="true" hidden></span>
                 <button type="submit" class="btn btn-quiet">Search</button>
               </div>
-              <ul id="city-results" class="options"></ul>
+              <p id="city-hint" class="sr-only">Results appear as you type. Use the up and down arrows to choose, Enter to select.</p>
+              <ul id="city-results" class="options" role="listbox" aria-label="Matching places"></ul>
+              <p id="city-live" class="sr-only" role="status" aria-live="polite"></p>
             </form>
           </div>
 

@@ -44,6 +44,7 @@ class Forecast(BaseModel):
 
 class Place(BaseModel):
     name: str
+    admin1: str | None = None  # region/state, to tell same-named places apart (R1.4)
     country: str | None = None
     lat: float
     lon: float

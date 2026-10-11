@@ -50,6 +50,17 @@ app = FastAPI(title="Golden Hour", version=__version__)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
+@app.middleware("http")
+async def revalidate_frontend(request, call_next):
+    # Without a Cache-Control header, browsers guess a cache lifetime and kept running the old
+    # app.js for hours after a deploy. "no-cache" means "check first": unchanged files come back
+    # as a tiny 304 thanks to their ETag, so this costs almost nothing.
+    response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 # Dependencies — overridden in tests so nothing touches the network or the real clock.
 
 

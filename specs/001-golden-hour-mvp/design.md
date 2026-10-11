@@ -286,3 +286,4 @@ downloadIcs(icsString, filename)       // Blob + temporary <a download>
 - 2026-10-09 — T3: `pick_windows` tie-break prefers golden hour before earlier start.
 - 2026-10-08 — T1: added `Place` and `PlanRequest` to §4.1 (they were implied by §4.4).
 - 2026-10-11 — §4.5: city search-as-you-type (R1.4), `Place.admin1`, dedupe.
+- 2026-10-11 — Frontend served with `Cache-Control: no-cache` (revalidate via ETag): after the R1.4 deploy the owner's browser kept running the old app.js, because without the header browsers guess a cache lifetime.

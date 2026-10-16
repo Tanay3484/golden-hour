@@ -1,5 +1,6 @@
 # 🌅 Golden Hour
 
+[![DEV Hacktoberfest 2026: Best Use of Render](https://img.shields.io/badge/DEV%20Hacktoberfest%202026-%F0%9F%8F%86%20Best%20Use%20of%20Render-46E3B7?logo=render&logoColor=white&labelColor=0A0A0A)](https://dev.to/devteam/congrats-to-the-hacktoberfest-open-source-ai-challenge-touch-grass-winners-152c)
 [![CI](https://github.com/Tanay3484/golden-hour/actions/workflows/ci.yml/badge.svg)](https://github.com/Tanay3484/golden-hour/actions/workflows/ci.yml)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Tanay3484/golden-hour)
 
@@ -12,6 +13,10 @@ hobbies, from [OpenStreetMap](https://www.openstreetmap.org). An open-weight mod
 what to do there right now. You get a countdown and a calendar invite with a 10-minute reminder.
 
 Built for the DEV [Hacktoberfest 2026 Open-Source AI Challenge, Week 1: "Touch Grass"](https://dev.to/challenges/hacktoberfest-week1-2026-10-05).
+
+> 🏆 **Winner: Best Use of Render** in the DEV Hacktoberfest 2026 Open-Source AI Challenge, Week 1
+> ([winners announcement](https://dev.to/devteam/congrats-to-the-hacktoberfest-open-source-ai-challenge-touch-grass-winners-152c) · [the write-up](https://dev.to/tanay_singh_1005/golden-hour-an-open-model-that-finds-your-40-minutes-outside-and-where-to-spend-them-5fe8)).
+> Gemma runs on a private Render service behind a public web app, both from one Blueprint.
 
 ## How it works
 

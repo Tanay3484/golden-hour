@@ -1,6 +1,8 @@
 # Golden Hour — agent guide
 
 Hacktoberfest 2026 Week 1 ("Touch Grass") entry. FastAPI + Gemma via Ollama, deployed on Render.
+Won Best Use of Render. **New session? Read `docs/HANDOFF.md` first**: status, live URLs, decisions,
+lessons, working agreements and open items.
 
 ## Workflow (AI-PDLC) — read `specs/README.md` first
 
